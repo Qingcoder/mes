@@ -1,0 +1,102 @@
+{
+  "version": 1,
+  "updatedAt": "2026-11-27T01:16:11.785600Z",
+  "groups": [
+    {
+      "id": "grp_prod",
+      "name": "生产作业",
+      "description": "车间现场常用作业入口",
+      "order": 1
+    },
+    {
+      "id": "grp_sys",
+      "name": "系统管理",
+      "description": "权限与配置入口",
+      "order": 2
+    }
+  ],
+  "sites": [
+    {
+      "id": "site_station",
+      "name": "站点作业",
+      "url": "/station",
+      "description": "扫码枪 / 手机扫码过站作业",
+      "icon": "▷",
+      "groupId": "grp_prod",
+      "order": 1,
+      "enabled": true,
+      "access": {
+        "roles": [],
+        "users": []
+      },
+      "flow": {
+        "mode": "sequence",
+        "order": 1,
+        "nextRule": "none",
+        "nextSiteId": "",
+        "jumpUrl": ""
+      }
+    },
+    {
+      "id": "site_pack",
+      "name": "包装管理",
+      "url": "/pack",
+      "description": "成箱包装与出库管理",
+      "icon": "▣",
+      "groupId": "grp_prod",
+      "order": 2,
+      "enabled": true,
+      "access": {
+        "roles": [],
+        "users": []
+      },
+      "flow": {
+        "mode": "sequence",
+        "order": 2,
+        "nextRule": "none",
+        "nextSiteId": "",
+        "jumpUrl": ""
+      }
+    },
+    {
+      "id": "site_access",
+      "name": "站点流程权限",
+      "url": "/access-control",
+      "description": "配置站点与流程访问权限",
+      "icon": "◈",
+      "groupId": "grp_sys",
+      "order": 1,
+      "enabled": true,
+      "access": {
+        "roles": [
+          "admin"
+        ],
+        "users": []
+      },
+      "flow": {
+        "mode": "manual",
+        "order": 1,
+        "nextRule": "none",
+        "nextSiteId": "",
+        "jumpUrl": ""
+      }
+    }
+  ],
+  "flows": [
+    {
+      "id": "flow_prod",
+      "name": "默认生产入口流程",
+      "description": "按顺序展示生产作业入口",
+      "siteIds": [
+        "site_station",
+        "site_pack"
+      ],
+      "access": {
+        "roles": [],
+        "users": []
+      },
+      "enabled": true,
+      "order": 1
+    }
+  ]
+}

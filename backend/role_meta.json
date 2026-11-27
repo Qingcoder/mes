@@ -1,0 +1,450 @@
+{
+  "version": 1,
+  "updatedAt": "2026-11-27T04:28:29.694107Z",
+  "items": {
+    "role_004": {
+      "avatar": "C",
+      "updatedBy": "admin",
+      "updatedAt": "2026-11-25T01:13:07.804244Z"
+    },
+    "RB-005": {
+      "avatar": "W",
+      "updatedBy": "admin",
+      "updatedAt": "2026-11-25T01:40:56.420682Z",
+      "combination": {
+        "code": "RB-005",
+        "name": "Window Role Test",
+        "modules": [
+          {
+            "key": "dashboard",
+            "name": "看板",
+            "order": 1,
+            "permission": "dashboard:view",
+            "route": "/dashboard",
+            "component": "DomainModuleView",
+            "description": "展示工单、生产报工、设备状态、质量检验等关键指标的汇总视图。",
+            "functionId": "func_dashboard",
+            "selected": true
+          },
+          {
+            "key": "machine",
+            "name": "设备管理",
+            "order": 3,
+            "permission": "machine:manage",
+            "route": "/machine",
+            "component": "DomainModuleView",
+            "description": "维护设备台账、运行/停机/维修状态与点检记录。",
+            "functionId": "func_machine",
+            "selected": true
+          }
+        ],
+        "permissions": [
+          "dashboard:view",
+          "machine:manage"
+        ],
+        "routes": [
+          {
+            "path": "/dashboard",
+            "name": "dashboard",
+            "label": "看板",
+            "component": "DomainModuleView",
+            "permission": "dashboard:view",
+            "module": "核心模块"
+          },
+          {
+            "path": "/machine",
+            "name": "machine",
+            "label": "设备管理",
+            "component": "DomainModuleView",
+            "permission": "machine:manage",
+            "module": "核心模块"
+          }
+        ],
+        "functions": [
+          {
+            "id": "func_dashboard",
+            "name": "看板",
+            "module": "核心模块",
+            "permission": "dashboard:view",
+            "route": "/dashboard",
+            "fixed": true,
+            "description": "展示工单、生产报工、设备状态、质量检验等关键指标的汇总视图。"
+          },
+          {
+            "id": "func_machine",
+            "name": "设备管理",
+            "module": "核心模块",
+            "permission": "machine:manage",
+            "route": "/machine",
+            "fixed": true,
+            "description": "管理设备台账、运行/停机/维修状态、点检维护记录及设备使用环境，支撑生产报工与设备状态联动。"
+          }
+        ],
+        "moduleKeys": [
+          "dashboard",
+          "machine"
+        ]
+      }
+    },
+    "RB-065": {
+      "avatar": "T",
+      "updatedBy": "admin",
+      "updatedAt": "2026-11-25T03:52:57.212956Z",
+      "combination": {
+        "code": "RB-065",
+        "name": "Tree Role Test",
+        "modules": [
+          {
+            "key": "dashboard",
+            "name": "看板",
+            "order": 1,
+            "permission": "dashboard:view",
+            "route": "/dashboard",
+            "component": "DomainModuleView",
+            "description": "展示工单、生产报工、设备状态、质量检验等关键指标的汇总视图。",
+            "functionId": "func_dashboard",
+            "selected": true,
+            "children": [
+              {
+                "id": "func_wo_view",
+                "name": "查看工单",
+                "permission": "wo:view",
+                "route": "/wo",
+                "component": "WO",
+                "description": "工单管理",
+                "moduleKey": "dashboard",
+                "selected": true
+              },
+              {
+                "id": "func_wo_create",
+                "name": "建单/改单",
+                "permission": "wo:create",
+                "route": "/wo",
+                "component": "WO",
+                "description": "工单管理",
+                "moduleKey": "dashboard",
+                "selected": false
+              },
+              {
+                "id": "func_query_view",
+                "name": "数据查询",
+                "permission": "query:view",
+                "route": "/query",
+                "component": "Query",
+                "description": "工单管理",
+                "moduleKey": "dashboard",
+                "selected": false
+              }
+            ]
+          }
+        ],
+        "permissions": [
+          "wo:view",
+          "dashboard:view"
+        ],
+        "routes": [
+          {
+            "path": "/wo",
+            "name": "wo_view",
+            "label": "查看工单",
+            "component": "WO",
+            "permission": "wo:view",
+            "module": "生产管理"
+          },
+          {
+            "path": "/dashboard",
+            "name": "dashboard",
+            "label": "看板",
+            "component": "DomainModuleView",
+            "permission": "dashboard:view",
+            "module": "核心模块"
+          }
+        ],
+        "functions": [
+          {
+            "id": "func_wo_view",
+            "name": "查看工单",
+            "module": "生产管理",
+            "permission": "wo:view",
+            "route": "/wo",
+            "fixed": false,
+            "description": ""
+          },
+          {
+            "id": "func_dashboard",
+            "name": "看板",
+            "module": "核心模块",
+            "permission": "dashboard:view",
+            "route": "/dashboard",
+            "fixed": true,
+            "description": "展示工单、生产报工、设备状态、质量检验等关键指标的汇总视图。"
+          }
+        ],
+        "moduleKeys": [
+          "dashboard"
+        ],
+        "functionIds": [
+          "func_wo_view"
+        ]
+      }
+    },
+    "RB-001": {
+      "avatar": "T",
+      "updatedBy": "admin",
+      "updatedAt": "2026-11-25T03:55:02.763820Z",
+      "combination": {
+        "code": "RB-001",
+        "name": "Tree Module Only",
+        "modules": [
+          {
+            "key": "dashboard",
+            "name": "看板",
+            "order": 1,
+            "permission": "dashboard:view",
+            "route": "/dashboard",
+            "component": "DomainModuleView",
+            "description": "展示工单、生产报工、设备状态、质量检验等关键指标的汇总视图。",
+            "functionId": "func_dashboard",
+            "selected": true,
+            "children": [
+              {
+                "id": "func_wo_view",
+                "name": "查看工单",
+                "permission": "wo:view",
+                "route": "/wo",
+                "component": "WO",
+                "description": "工单管理",
+                "moduleKey": "dashboard",
+                "selected": false
+              },
+              {
+                "id": "func_wo_create",
+                "name": "建单/改单",
+                "permission": "wo:create",
+                "route": "/wo",
+                "component": "WO",
+                "description": "工单管理",
+                "moduleKey": "dashboard",
+                "selected": false
+              },
+              {
+                "id": "func_query_view",
+                "name": "数据查询",
+                "permission": "query:view",
+                "route": "/query",
+                "component": "Query",
+                "description": "工单管理",
+                "moduleKey": "dashboard",
+                "selected": false
+              }
+            ]
+          }
+        ],
+        "permissions": [
+          "dashboard:view"
+        ],
+        "routes": [
+          {
+            "path": "/dashboard",
+            "name": "dashboard",
+            "label": "看板",
+            "component": "DomainModuleView",
+            "permission": "dashboard:view",
+            "module": "核心模块"
+          }
+        ],
+        "functions": [
+          {
+            "id": "func_dashboard",
+            "name": "看板",
+            "module": "核心模块",
+            "permission": "dashboard:view",
+            "route": "/dashboard",
+            "fixed": true,
+            "description": "展示工单、生产报工、设备状态、质量检验等关键指标的汇总视图。"
+          }
+        ],
+        "moduleKeys": [
+          "dashboard"
+        ],
+        "functionIds": []
+      }
+    },
+    "RB-30748": {
+      "avatar": "站",
+      "updatedBy": "admin",
+      "updatedAt": "2026-11-27T01:11:25.418232Z",
+      "combination": {
+        "code": "RB-30748",
+        "name": "工艺",
+        "modules": [
+          {
+            "key": "method",
+            "name": "工艺管理",
+            "order": 5,
+            "permission": "method:manage",
+            "route": "/method",
+            "component": "DomainModuleView",
+            "description": "维护工艺流程、作业指导、站点顺序与不良代码规则。",
+            "functionId": "func_method",
+            "selected": true,
+            "children": [
+              {
+                "id": "func_station_op",
+                "name": "站点作业",
+                "permission": "station:op",
+                "route": "/station",
+                "component": "Station",
+                "description": "生产作业",
+                "moduleKey": "method",
+                "selected": false
+              },
+              {
+                "id": "func_rework_op",
+                "name": "返修回站",
+                "permission": "rework:op",
+                "route": "/station",
+                "component": "Station",
+                "description": "生产作业",
+                "moduleKey": "method",
+                "selected": false
+              }
+            ]
+          }
+        ],
+        "permissions": [
+          "method:manage"
+        ],
+        "routes": [
+          {
+            "path": "/wo",
+            "name": "sn_import",
+            "label": "导入 SN",
+            "component": "WO",
+            "permission": "sn:import",
+            "module": "生产管理"
+          },
+          {
+            "path": "/station",
+            "name": "station_op",
+            "label": "站点作业",
+            "component": "Station",
+            "permission": "station:op",
+            "module": "生产"
+          },
+          {
+            "path": "/pack",
+            "name": "pack_op",
+            "label": "装箱出库",
+            "component": "Pack",
+            "permission": "pack:op",
+            "module": "生产"
+          },
+          {
+            "path": "/machine",
+            "name": "machine",
+            "label": "设备管理",
+            "component": "DomainModuleView",
+            "permission": "machine:manage",
+            "module": "核心模块"
+          },
+          {
+            "path": "/material",
+            "name": "material",
+            "label": "物料管理",
+            "component": "DomainModuleView",
+            "permission": "material:manage",
+            "module": "核心模块"
+          },
+          {
+            "path": "/method",
+            "name": "method",
+            "label": "工艺管理",
+            "component": "DomainModuleView",
+            "permission": "method:manage",
+            "module": "核心模块"
+          }
+        ],
+        "functions": [
+          {
+            "id": "func_sn_import",
+            "name": "导入 SN",
+            "module": "生产管理",
+            "permission": "sn:import",
+            "route": "/wo",
+            "fixed": false,
+            "description": ""
+          },
+          {
+            "id": "func_station_op",
+            "name": "站点作业",
+            "module": "生产",
+            "permission": "station:op",
+            "route": "/station",
+            "fixed": false,
+            "description": ""
+          },
+          {
+            "id": "func_rework_op",
+            "name": "返修回站",
+            "module": "生产",
+            "permission": "rework:op",
+            "route": "/station",
+            "fixed": false,
+            "description": ""
+          },
+          {
+            "id": "func_pack_op",
+            "name": "装箱出库",
+            "module": "生产",
+            "permission": "pack:op",
+            "route": "/pack",
+            "fixed": false,
+            "description": ""
+          },
+          {
+            "id": "func_machine",
+            "name": "设备管理",
+            "module": "核心模块",
+            "permission": "machine:manage",
+            "route": "/machine",
+            "fixed": true,
+            "description": "管理设备台账、运行/停机/维修状态、点检维护记录及设备使用环境，支撑生产报工与设备状态联动。"
+          },
+          {
+            "id": "func_material",
+            "name": "物料管理",
+            "module": "核心模块",
+            "permission": "material:manage",
+            "route": "/material",
+            "fixed": true,
+            "description": "管理原材料、半成品、成品台账与批次追溯，关联工单领料、包装出库和材料环境/配置，支撑物料追溯。"
+          },
+          {
+            "id": "func_method",
+            "name": "工艺管理",
+            "module": "核心模块",
+            "permission": "method:manage",
+            "route": "/method",
+            "fixed": true,
+            "description": "维护工艺流程、作业指导、站点顺序与不良代码规则，支撑过站报工、返修流转和工艺追溯。"
+          }
+        ],
+        "moduleKeys": [
+          "method"
+        ],
+        "functionIds": [
+          "func_sn_import",
+          "func_pack_op",
+          "func_station_op",
+          "func_rework_op"
+        ]
+      }
+    },
+    "RB-063": {
+      "accountType": "生产管理",
+      "updatedBy": "admin",
+      "updatedAt": "2026-11-27T04:20:53.141577Z"
+    }
+  }
+}

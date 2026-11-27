@@ -1,0 +1,50 @@
+{
+  "version": 1,
+  "nodes": [
+    {
+      "id": "prod",
+      "name": "工单管理",
+      "module": "生产管理",
+      "children": [
+        { "id": "func_wo_view", "name": "查看工单", "permission": "wo:view", "route": "/wo", "component": "WO", "module": "生产管理", "moduleKey": "dashboard" },
+        { "id": "func_wo_create", "name": "建单/改单", "permission": "wo:create", "route": "/wo", "component": "WO", "module": "生产管理", "moduleKey": "dashboard" },
+        { "id": "func_sn_import", "name": "导入 SN", "permission": "sn:import", "route": "/wo", "component": "WO", "module": "生产管理", "moduleKey": "material" },
+        { "id": "func_query_view", "name": "数据查询", "permission": "query:view", "route": "/query", "component": "Query", "module": "查询", "moduleKey": "dashboard" }
+      ]
+    },
+    {
+      "id": "ops",
+      "name": "生产作业",
+      "module": "生产作业",
+      "children": [
+        { "id": "func_station_op", "name": "站点作业", "permission": "station:op", "route": "/station", "component": "Station", "module": "生产", "moduleKey": "method" },
+        { "id": "func_rework_op", "name": "返修回站", "permission": "rework:op", "route": "/station", "component": "Station", "module": "生产", "moduleKey": "method" },
+        { "id": "func_pack_op", "name": "装箱出库", "permission": "pack:op", "route": "/pack", "component": "Pack", "module": "生产", "moduleKey": "material" }
+      ]
+    },
+    {
+      "id": "sys",
+      "name": "系统管理",
+      "module": "系统管理",
+      "children": [
+        { "id": "func_user_manage", "name": "用户管理", "permission": "system:user:manage", "route": "", "component": "PersonManage", "module": "系统", "moduleKey": "person" },
+        { "id": "func_role_manage", "name": "角色权限", "permission": "system:role:manage", "route": "/roles", "component": "RoleManage", "module": "系统", "moduleKey": "person" },
+        { "id": "func_access_manage", "name": "站点流程权限", "permission": "system:access:manage", "route": "/access-control", "component": "AccessManage", "module": "系统", "moduleKey": "environment" },
+        { "id": "func_site_manage", "name": "自定义站点", "permission": "system:access:manage", "route": "/site-manage", "component": "SiteManage", "module": "系统", "moduleKey": "environment" }
+      ]
+    },
+    {
+      "id": "domains",
+      "name": "核心模块",
+      "module": "核心模块",
+      "children": [
+        { "id": "func_dashboard", "name": "看板", "permission": "dashboard:view", "route": "/dashboard", "component": "DomainModuleView", "module": "核心模块", "fixed": true, "description": "展示工单、生产报工、设备状态、质量检验等关键指标的汇总视图。" },
+        { "id": "func_person", "name": "人员管理", "permission": "person:manage", "route": "/person", "component": "PersonManage", "module": "核心模块", "fixed": true, "description": "维护员工档案、部门/产线/班组归属、岗位角色与系统账号，控制工单管理、生产报工、物料追溯、设备状态、质量检验等模块的访问权限。" },
+        { "id": "func_machine", "name": "设备管理", "permission": "machine:manage", "route": "/machine", "component": "DomainModuleView", "module": "核心模块", "fixed": true, "description": "管理设备台账、运行/停机/维修状态、点检维护记录及设备使用环境，支撑生产报工与设备状态联动。" },
+        { "id": "func_material", "name": "物料管理", "permission": "material:manage", "route": "/material", "component": "DomainModuleView", "module": "核心模块", "fixed": true, "description": "管理原材料、半成品、成品台账与批次追溯，关联工单领料、包装出库和材料环境/配置，支撑物料追溯。" },
+        { "id": "func_method", "name": "工艺管理", "permission": "method:manage", "route": "/method", "component": "DomainModuleView", "module": "核心模块", "fixed": true, "description": "维护工艺流程、作业指导、站点顺序与不良代码规则，支撑过站报工、返修流转和工艺追溯。" },
+        { "id": "func_environment", "name": "环境配置", "permission": "environment:manage", "route": "/environment", "component": "DomainModuleView", "module": "核心模块", "fixed": true, "description": "维护部门、产线、工位/站点、存储环境及软硬件配置，关联人员作业环境、设备使用环境、物料存放条件和工艺依赖。" }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,73 @@
+{
+  "version": 1,
+  "updatedAt": "2026-11-24T09:50:19.564904Z",
+  "updatedBy": "admin",
+  "domains": [
+    {
+      "key": "dashboard",
+      "name": "看板",
+      "route": "/dashboard",
+      "menuGroup": "核心模块",
+      "permission": "dashboard:view",
+      "description": "展示工单、生产报工、设备状态、质量检验等关键指标的汇总视图。",
+      "children": [],
+      "relations": [],
+      "notes": ""
+    },
+    {
+      "key": "person",
+      "name": "人员管理",
+      "route": "/person",
+      "menuGroup": "核心模块",
+      "permission": "person:manage",
+      "description": "维护员工档案、部门/产线/班组归属、岗位角色与系统账号，控制工单管理、生产报工、物料追溯、设备状态、质量检验等模块的访问权限。",
+      "children": [],
+      "relations": [],
+      "notes": ""
+    },
+    {
+      "key": "machine",
+      "name": "设备管理",
+      "route": "/machine",
+      "menuGroup": "核心模块",
+      "permission": "machine:manage",
+      "description": "管理设备台账、运行/停机/维修状态、点检维护记录及设备使用环境，支撑生产报工与设备状态联动。",
+      "children": [],
+      "relations": [],
+      "notes": ""
+    },
+    {
+      "key": "material",
+      "name": "物料管理",
+      "route": "/material",
+      "menuGroup": "核心模块",
+      "permission": "material:manage",
+      "description": "管理仓库成品台账与批次追溯，关联工单领料、包装出库和材料环境/配置，支撑成品追溯。",
+      "children": [],
+      "relations": [],
+      "notes": ""
+    },
+    {
+      "key": "method",
+      "name": "工艺管理",
+      "route": "/method",
+      "menuGroup": "核心模块",
+      "permission": "method:manage",
+      "description": "维护工艺流程、作业指导、站点顺序与不良代码规则，支撑过站报工、返修流转和工艺追溯。",
+      "children": [],
+      "relations": [],
+      "notes": ""
+    },
+    {
+      "key": "environment",
+      "name": "共享资料库",
+      "route": "/environment",
+      "menuGroup": "核心模块",
+      "permission": "environment:manage",
+      "description": "统一上传、查看、下载和更新共享资料，关联人员、产品、设备与工艺，供各模块共同使用。",
+      "children": [],
+      "relations": [],
+      "notes": ""
+    }
+  ]
+}

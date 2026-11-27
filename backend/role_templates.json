@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "items": [
+    {
+      "id": "tpl_wo_manager",
+      "name": "工单管理员",
+      "description": "负责工单下达、SN 导入与数据查询。",
+      "avatar": "单",
+      "functions": ["func_wo_view", "func_wo_create", "func_sn_import", "func_query_view"]
+    },
+    {
+      "id": "tpl_operator",
+      "name": "生产操作员",
+      "description": "负责站点过站、返修回站与包装作业。",
+      "avatar": "产",
+      "functions": ["func_wo_view", "func_station_op", "func_rework_op", "func_pack_op"]
+    },
+    {
+      "id": "tpl_quality",
+      "name": "质量检验员",
+      "description": "负责工单查询、过站记录查看与质量检验协同。",
+      "avatar": "质",
+      "functions": ["func_wo_view", "func_query_view", "func_station_op"]
+    },
+    {
+      "id": "tpl_equipment",
+      "name": "设备管理员",
+      "description": "负责设备台账、设备状态与使用环境维护。",
+      "avatar": "设",
+      "functions": ["func_machine", "func_query_view"]
+    },
+    {
+      "id": "tpl_material",
+      "name": "物料仓管员",
+      "description": "负责物料批次追溯、包装出库与工单领料协同。",
+      "avatar": "料",
+      "functions": ["func_material", "func_pack_op", "func_query_view"]
+    },
+    {
+      "id": "tpl_custom",
+      "name": "创建模板（自定义）",
+      "description": "自定义角色名称和可访问功能。",
+      "avatar": "",
+      "functions": [],
+      "custom": true
+    }
+  ]
+}

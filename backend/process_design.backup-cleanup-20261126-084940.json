@@ -1,0 +1,356 @@
+{
+  "version": 1,
+  "updatedAt": "2026-11-25T14:56:31.565615Z",
+  "groups": [
+    {
+      "id": "grp_main_flow",
+      "name": "主线流程",
+      "description": "产品正常流转的工艺站点",
+      "order": 1
+    },
+    {
+      "id": "grp_repair",
+      "name": "维修处理",
+      "description": "不良品维修与回站处理",
+      "order": 2
+    },
+    {
+      "id": "grp_1795601737402_472",
+      "name": "新分组 3",
+      "description": "",
+      "order": 3
+    },
+    {
+      "id": "grp_1795589292446_432",
+      "name": "新分组 3",
+      "description": "",
+      "order": 4
+    }
+  ],
+  "stations": [
+    {
+      "id": "station_op10",
+      "code": "OP10",
+      "name": "夹爪测试",
+      "type": "quality",
+      "groupId": "grp_main_flow",
+      "order": 1,
+      "enabled": true,
+      "description": "",
+      "workInstruction": "",
+      "params": [],
+      "failCodes": [],
+      "returnStationId": ""
+    },
+    {
+      "id": "station_op20",
+      "code": "OP20",
+      "name": "OP20",
+      "type": "quality",
+      "groupId": "grp_main_flow",
+      "order": 2,
+      "enabled": true,
+      "description": "",
+      "workInstruction": "",
+      "params": [],
+      "failCodes": [],
+      "returnStationId": ""
+    },
+    {
+      "id": "station_r100",
+      "code": "R100",
+      "name": "维修站",
+      "type": "repair",
+      "groupId": "grp_repair",
+      "order": 3,
+      "enabled": true,
+      "description": "",
+      "workInstruction": "",
+      "params": [],
+      "failCodes": [],
+      "returnStationId": ""
+    },
+    {
+      "id": "station_1795601738508_539",
+      "code": "OP30",
+      "name": "主线站点30",
+      "type": "quality",
+      "groupId": "grp_main_flow",
+      "order": 4,
+      "enabled": true,
+      "description": "",
+      "workInstruction": "",
+      "params": [],
+      "failCodes": [],
+      "returnStationId": ""
+    }
+  ],
+  "library": [
+    {
+      "id": "lib_grp_flow",
+      "name": "主线流程",
+      "prefix": "OP",
+      "start": 10,
+      "step": 10,
+      "description": "常规生产主线站点，编码 OP10、OP20、OP30 递增",
+      "order": 1,
+      "items": [
+        {
+          "id": "lib_op_10",
+          "code": "OP10",
+          "name": "主线站点10",
+          "type": "quality",
+          "description": ""
+        },
+        {
+          "id": "lib_op_20",
+          "code": "OP20",
+          "name": "主线站点20",
+          "type": "quality",
+          "description": ""
+        },
+        {
+          "id": "lib_op_30",
+          "code": "OP30",
+          "name": "主线站点30",
+          "type": "quality",
+          "description": ""
+        },
+        {
+          "id": "lib_op_40",
+          "code": "OP40",
+          "name": "主线站点40",
+          "type": "quality",
+          "description": ""
+        },
+        {
+          "id": "lib_op_50",
+          "code": "OP50",
+          "name": "主线站点50",
+          "type": "quality",
+          "description": ""
+        },
+        {
+          "id": "lib_op_60",
+          "code": "OP60",
+          "name": "主线站点60",
+          "type": "quality",
+          "description": ""
+        },
+        {
+          "id": "lib_op_70",
+          "code": "OP70",
+          "name": "主线站点70",
+          "type": "quality",
+          "description": ""
+        },
+        {
+          "id": "lib_op_80",
+          "code": "OP80",
+          "name": "主线站点80",
+          "type": "quality",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "id": "lib_grp_test",
+      "name": "测试/检验",
+      "prefix": "QC",
+      "start": 10,
+      "step": 10,
+      "description": "测试与质量检验站点",
+      "order": 2,
+      "items": [
+        {
+          "id": "lib_qc_10",
+          "code": "QC10",
+          "name": "检验站10",
+          "type": "quality",
+          "description": ""
+        },
+        {
+          "id": "lib_qc_20",
+          "code": "QC20",
+          "name": "检验站20",
+          "type": "quality",
+          "description": ""
+        },
+        {
+          "id": "lib_qc_30",
+          "code": "QC30",
+          "name": "检验站30",
+          "type": "quality",
+          "description": ""
+        },
+        {
+          "id": "lib_qc_40",
+          "code": "QC40",
+          "name": "检验站40",
+          "type": "quality",
+          "description": ""
+        },
+        {
+          "id": "lib_qc_50",
+          "code": "QC50",
+          "name": "检验站50",
+          "type": "quality",
+          "description": ""
+        },
+        {
+          "id": "lib_qc_60",
+          "code": "QC60",
+          "name": "检验站60",
+          "type": "quality",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "id": "lib_grp_repair",
+      "name": "维修返修",
+      "prefix": "R",
+      "start": 100,
+      "step": 1,
+      "description": "返修与回站处理站点",
+      "order": 3,
+      "items": [
+        {
+          "id": "lib_r_100",
+          "code": "R100",
+          "name": "维修站100",
+          "type": "repair",
+          "description": ""
+        },
+        {
+          "id": "lib_r_101",
+          "code": "R101",
+          "name": "维修站101",
+          "type": "repair",
+          "description": ""
+        },
+        {
+          "id": "lib_r_102",
+          "code": "R102",
+          "name": "维修站102",
+          "type": "repair",
+          "description": ""
+        },
+        {
+          "id": "lib_r_103",
+          "code": "R103",
+          "name": "维修站103",
+          "type": "repair",
+          "description": ""
+        },
+        {
+          "id": "lib_r_104",
+          "code": "R104",
+          "name": "维修站104",
+          "type": "repair",
+          "description": ""
+        },
+        {
+          "id": "lib_r_105",
+          "code": "R105",
+          "name": "维修站105",
+          "type": "repair",
+          "description": ""
+        },
+        {
+          "id": "lib_r_106",
+          "code": "R106",
+          "name": "维修站106",
+          "type": "repair",
+          "description": ""
+        },
+        {
+          "id": "lib_r_107",
+          "code": "R107",
+          "name": "维修站107",
+          "type": "repair",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "id": "lib_grp_pack",
+      "name": "包装出库",
+      "prefix": "PK",
+      "start": 10,
+      "step": 10,
+      "description": "装箱、包装与出库站点",
+      "order": 4,
+      "items": [
+        {
+          "id": "lib_pk_10",
+          "code": "PK10",
+          "name": "包装站10",
+          "type": "warehouse",
+          "description": ""
+        },
+        {
+          "id": "lib_pk_20",
+          "code": "PK20",
+          "name": "包装站20",
+          "type": "warehouse",
+          "description": ""
+        },
+        {
+          "id": "lib_pk_30",
+          "code": "PK30",
+          "name": "包装站30",
+          "type": "warehouse",
+          "description": ""
+        },
+        {
+          "id": "lib_pk_40",
+          "code": "PK40",
+          "name": "包装站40",
+          "type": "warehouse",
+          "description": ""
+        },
+        {
+          "id": "lib_pk_50",
+          "code": "PK50",
+          "name": "包装站50",
+          "type": "warehouse",
+          "description": ""
+        },
+        {
+          "id": "lib_pk_60",
+          "code": "PK60",
+          "name": "包装站60",
+          "type": "warehouse",
+          "description": ""
+        }
+      ]
+    }
+  ],
+  "settings": {
+    "assignPolicy": "first",
+    "snPoolScope": "workOrder",
+    "failCodeScope": "station",
+    "repairStationId": "station_r100"
+  },
+  "options": {
+    "stationTypes": [
+      {
+        "value": "quality",
+        "label": "质量检验"
+      },
+      {
+        "value": "repair",
+        "label": "维修"
+      },
+      {
+        "value": "warehouse",
+        "label": "包装/仓库"
+      },
+      {
+        "value": "type_1795601222509",
+        "label": "返修"
+      }
+    ]
+  }
+}

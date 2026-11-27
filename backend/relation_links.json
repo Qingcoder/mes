@@ -1,0 +1,96 @@
+{
+  "version": 1,
+  "updatedAt": "2026-11-27T05:38:52Z",
+  "edges": [
+    {
+      "sourceKind": "equipment",
+      "sourceCode": "EQ0001",
+      "targetKind": "station",
+      "targetCode": "OP10"
+    },
+    {
+      "sourceKind": "equipment",
+      "sourceCode": "EQ0001",
+      "targetKind": "product",
+      "targetCode": "P0001"
+    },
+    {
+      "sourceKind": "equipment",
+      "sourceCode": "EQ0001",
+      "targetKind": "person",
+      "targetCode": "夹爪测试员"
+    },
+    {
+      "sourceKind": "equipment",
+      "sourceCode": "EQ0002",
+      "targetKind": "product",
+      "targetCode": "GRIPPER"
+    },
+    {
+      "sourceKind": "equipment",
+      "sourceCode": "EQ0004",
+      "targetKind": "product",
+      "targetCode": "GRIPPER"
+    },
+    {
+      "sourceKind": "equipment",
+      "sourceCode": "EQ0006",
+      "targetKind": "product",
+      "targetCode": "GRIPPER"
+    },
+    {
+      "sourceKind": "station",
+      "sourceCode": "OP10",
+      "targetKind": "equipment",
+      "targetCode": "EQ0001"
+    },
+    {
+      "sourceKind": "station",
+      "sourceCode": "OP10",
+      "targetKind": "person",
+      "targetCode": "夹爪测试员"
+    },
+    {
+      "sourceKind": "station",
+      "sourceCode": "OP10",
+      "targetKind": "product",
+      "targetCode": "P0001"
+    },
+    {
+      "sourceKind": "station",
+      "sourceCode": "R100",
+      "targetKind": "product",
+      "targetCode": "GRIPPER"
+    },
+    {
+      "sourceKind": "station",
+      "sourceCode": "R100",
+      "targetKind": "product",
+      "targetCode": "P0001"
+    },
+    {
+      "sourceKind": "station",
+      "sourceCode": "R100",
+      "targetKind": "product",
+      "targetCode": "P0002"
+    },
+    {
+      "sourceKind": "station",
+      "sourceCode": "OP30",
+      "targetKind": "product",
+      "targetCode": "GRIPPER"
+    },
+    {
+      "sourceKind": "station",
+      "sourceCode": "OP30",
+      "targetKind": "product",
+      "targetCode": "P0001"
+    },
+    {
+      "sourceKind": "station",
+      "sourceCode": "OP30",
+      "targetKind": "product",
+      "targetCode": "P0002"
+    }
+  ]
+}

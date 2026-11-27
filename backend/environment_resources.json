@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "updatedAt": "2026-11-26T14:17:43.869",
+  "resources": [
+    {
+      "id": "fd56c843fd20478ba1d24400884325a1",
+      "title": "设备名称",
+      "module": "environment",
+      "category": "设备资料",
+      "description": "",
+      "fileName": "设备资料.xlsx",
+      "extension": ".xlsx",
+      "contentType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "size": 10158,
+      "uploadedAt": "2026-11-26T14:17:43.866",
+      "uploadedBy": "admin",
+      "path": "fd56c843fd20478ba1d24400884325a1.xlsx"
+    }
+  ]
+}

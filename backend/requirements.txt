@@ -1,0 +1,6 @@
+fastapi==0.165.0
+pydantic==2.14.3
+pydantic_core==2.50.4
+python-multipart==0.0.34
+SQLAlchemy==2.1.9
+uvicorn==0.54.0

@@ -1,0 +1,45 @@
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+
+# ---- 运行时数据与密钥（不入库）----
+*.db
+*.db-shm
+*.db-wal
+*.db-journal
+backend/uploads/
+backend/.token_secret
+.token_secret
+*.bak_single_admin_*
+
+# ---- 前端 ----
+frontend/node_modules/
+frontend/dist/
+frontend/build.log
+frontend/build.log.err
+*.local
+
+# ---- 工具与临时产物 ----
+.playwright-cli/
+*.log
+*.log.err
+*.pid
+
+# ---- 历史备份快照（开发回滚用，体积大，按需放开）----
+backup_*/
+backup_before_*/
+
+# ---- 编辑器 / 系统 ----
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# ---- 说明 ----
+# 业务主数据（backend/*.json）与 docs/、MES系统/ 下的文档要入库：
+# 它们是配置与需求依据，不是运行时缓存。
+# 排除的只有数据库文件、依赖目录、构建产物与备份快照。

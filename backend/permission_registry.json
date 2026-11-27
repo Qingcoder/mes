@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "codePrefix": "PM",
+  "description": "权限点目录与权限项数码。PM 按权限项数量生成，顺序无关；相同数量使用相同编码，不用于区分具体权限集合。",
+  "permissions": [
+    { "code": "wo:view", "name": "查看工单", "module": "工单" },
+    { "code": "wo:create", "name": "建单/改单", "module": "工单" },
+    { "code": "sn:import", "name": "导入 SN", "module": "工单" },
+    { "code": "station:op", "name": "过站作业", "module": "生产" },
+    { "code": "rework:op", "name": "返修回站", "module": "生产" },
+    { "code": "pack:op", "name": "装箱出库", "module": "生产" },
+    { "code": "query:view", "name": "数据查询", "module": "查询" },
+    { "code": "system:user:manage", "name": "用户管理", "module": "系统" },
+    { "code": "system:role:manage", "name": "角色权限", "module": "系统" },
+    { "code": "system:access:manage", "name": "站点流程权限", "module": "系统" },
+    { "code": "dashboard:view", "name": "看板查看", "module": "模块" },
+    { "code": "person:manage", "name": "人员管理", "module": "模块" },
+    { "code": "machine:manage", "name": "设备管理", "module": "模块" },
+    { "code": "material:manage", "name": "物料管理", "module": "模块" },
+    { "code": "method:manage", "name": "工艺管理", "module": "模块" },
+    { "code": "environment:manage", "name": "环境配置", "module": "模块" }
+  ]
+}

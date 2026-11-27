@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MD 阅读器 · MES 架构文档</title>
+<script>window.__MD_PRELOAD__=null;</script>
+<style>
+:root{
+  --bg:#F4F5F7; --surface:#FFFFFF; --line:#E6E8EB; --ink:#2B2E31; --muted:#8C9199;
+  --accent:#E61736; --accent-soft:#FDECEA; --green:#1A7A4C; --blue:#2B6CB0;
+  --code-bg:#F7F8FA; --shadow:0 1px 3px rgba(30,34,40,.06),0 6px 18px rgba(30,34,40,.04);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Microsoft YaHei","PingFang SC",Arial,sans-serif;background:var(--bg);color:var(--ink);font-size:15px;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+header{background:var(--surface);border-bottom:1px solid var(--line);padding:14px 22px;display:flex;align-items:center;gap:14px;flex-shrink:0}
+header .logo{width:28px;height:28px;border-radius:7px;background:var(--accent);color:#fff;font-weight:800;font-size:15px;display:flex;align-items:center;justify-content:center}
+header h1{font-size:17px;font-weight:700}
+header .sp{flex:1}
+header .hint{font-size:13px;color:var(--muted)}
+.btn{border:1px solid #D8DCE0;background:#fff;color:#484B4E;border-radius:5px;padding:8px 15px;font-size:14px;cursor:pointer;font-family:inherit;transition:.15s}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+.btn.primary:hover{background:#BC122F;color:#fff}
+input[type=file]{display:none}
+.main{flex:1;display:flex;min-height:0}
+.sidebar{width:268px;background:var(--surface);border-right:1px solid var(--line);display:flex;flex-direction:column;flex-shrink:0}
+.sidebar .title{padding:16px 18px 10px;font-size:12px;color:var(--muted);letter-spacing:1px;font-weight:600;text-transform:uppercase}
+.search{padding:0 14px 12px}
+.search input{width:100%;border:1px solid var(--line);border-radius:5px;padding:8px 10px;font-size:14px;outline:none;font-family:inherit}
+.search input:focus{border-color:var(--accent)}
+.filelist{flex:1;overflow-y:auto;padding:0 8px 12px}
+.file{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:5px;cursor:pointer;margin-bottom:2px;transition:.12s}
+.file:hover{background:#F7F8FA}
+.file.active{background:var(--accent-soft);color:var(--accent);font-weight:600}
+.file .ic{font-size:15px;opacity:.75}
+.file .nm{flex:1;font-size:14px;word-break:break-all;line-height:1.4}
+.file .sz{font-size:11px;color:var(--muted);white-space:nowrap}
+.empty{padding:40px 20px;text-align:center;color:var(--muted);font-size:14px;line-height:1.8}
+.reader{flex:1;overflow-y:auto;padding:34px 48px 80px;background:var(--surface);min-width:0}
+.doc{max-width:900px;margin:0 auto}
+.doc h1{font-size:30px;font-weight:800;margin:0 0 18px;padding-bottom:14px;border-bottom:2px solid var(--accent);line-height:1.3}
+.doc h2{font-size:22px;font-weight:700;margin:34px 0 14px;padding-left:12px;border-left:4px solid var(--accent);line-height:1.35}
+.doc h3{font-size:18px;font-weight:700;margin:24px 0 10px;color:#425C86}
+.doc h4{font-size:16px;font-weight:700;margin:18px 0 8px}
+.doc p{font-size:15px;line-height:1.85;margin:10px 0;color:#34383C}
+.doc ul,.doc ol{margin:10px 0 10px 26px;line-height:1.85}
+.doc li{margin:4px 0}
+.doc strong{font-weight:700;color:var(--ink)}
+.doc em{color:#555}
+.doc a{color:var(--blue);text-decoration:none}
+.doc a:hover{text-decoration:underline}
+.doc blockquote{border-left:4px solid #C8CDD3;background:#F7F8FA;padding:12px 18px;margin:16px 0;color:#484B4E;line-height:1.8;border-radius:0 4px 4px 0}
+.doc blockquote p{margin:0}
+.doc hr{border:0;border-top:1px solid var(--line);margin:28px 0}
+.doc code{background:var(--code-bg);border:1px solid var(--line);border-radius:3px;padding:1px 6px;font-family:Consolas,Menlo,monospace;font-size:13px;color:#C0392B}
+.doc pre{background:var(--code-bg);border:1px solid var(--line);border-radius:6px;padding:16px 18px;margin:16px 0;overflow-x:auto;line-height:1.6}
+.doc pre code{background:none;border:0;padding:0;color:#2B2E31;font-size:13px}
+.doc table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14px;line-height:1.6}
+.doc th{background:#F0F2F5;font-weight:700;text-align:left;padding:10px 12px;border:1px solid var(--line);white-space:nowrap}
+.doc td{padding:9px 12px;border:1px solid var(--line);vertical-align:top}
+.doc tr:nth-child(even) td{background:#FAFBFC}
+.doc table td code,.doc table th code{font-size:12px}
+.tag{display:inline-block;background:var(--accent-soft);color:var(--accent);border-radius:3px;padding:1px 7px;font-size:12px;font-weight:600;margin-right:6px}
+.dropzone{position:fixed;inset:0;background:rgba(230,23,54,.06);border:3px dashed var(--accent);z-index:99;display:none;align-items:center;justify-content:center;font-size:22px;color:var(--accent);font-weight:700;pointer-events:none}
+.dropzone.show{display:flex}
+.toc{position:fixed;right:22px;bottom:22px;background:var(--surface);border:1px solid var(--line);border-radius:8px;box-shadow:var(--shadow);padding:10px 14px;font-size:13px;max-width:230px;max-height:60vh;overflow-y:auto;display:none}
+.toc.show{display:block}
+.toc b{display:block;margin-bottom:6px;font-size:12px;color:var(--muted)}
+.toc a{display:block;color:#425C86;text-decoration:none;padding:3px 0;line-height:1.4}
+.toc a:hover{color:var(--accent)}
+@media(max-width:860px){.sidebar{width:190px}.reader{padding:24px 22px 60px}.toc{display:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">M</div>
+  <h1>MD 阅读器 · MES 架构文档</h1>
+  <div class="sp"></div>
+  <span class="hint" id="hint">拖拽 md 文件到此处，或点右侧按钮</span>
+  <button class="btn primary" onclick="document.getElementById('fileInput').click()">选择 md 文件</button>
+  <button class="btn" onclick="toggleToc()" id="tocBtn">大纲</button>
+  <input type="file" id="fileInput" multiple accept=".md,.markdown,.txt">
+</header>
+<div class="main">
+  <aside class="sidebar">
+    <div class="title">文档列表</div>
+    <div class="search"><input type="text" id="search" placeholder="筛选文件名…" oninput="renderList()"></div>
+    <div class="filelist" id="filelist"><div class="empty">还没有加载文档<br>点上方「选择 md 文件」<br>可一次全选文件夹里的所有 md</div></div>
+  </aside>
+  <main class="reader" id="reader"><div class="doc" id="doc"><div class="empty">选择左侧文档开始阅读</div></div></main>
+</div>
+<div class="dropzone" id="dropzone">松开即可载入 md 文档</div>
+<div class="toc" id="toc"><b>本文大纲</b><div id="tocLinks"></div></div>
+
+<script>
+var files=[], current=-1;
+
+document.getElementById('fileInput').addEventListener('change',function(e){loadFiles(e.target.files)});
+document.addEventListener('dragover',function(e){e.preventDefault();document.getElementById('dropzone').classList.add('show')});
+document.addEventListener('dragleave',function(e){if(e.clientX<=0||e.clientY<=0||e.clientX>=innerWidth||e.clientY>=innerHeight)document.getElementById('dropzone').classList.remove('show')});
+document.addEventListener('drop',function(e){e.preventDefault();document.getElementById('dropzone').classList.remove('show');loadFiles(e.dataTransfer.files)});
+
+function loadFiles(list){
+  var arr=Array.prototype.slice.call(list).filter(function(f){return /\.(md|markdown|txt)$/i.test(f.name)});
+  if(!arr.length){alert('没有找到 md 文件');return}
+  arr.sort(function(a,b){return a.name.localeCompare(b.name,'zh-CN')});
+  var pending=arr.length;
+  arr.forEach(function(f,idx){
+    var r=new FileReader();
+    r.onload=function(){
+      files[idx]={name:f.name,size:f.size,text:r.result};
+      if(--pending===0){renderList();openFile(0);document.getElementById('hint').textContent='已载入 '+files.length+' 个文档'}
+    };
+    r.readAsText(f,'UTF-8');
+  });
+}
+
+function renderList(){
+  var q=(document.getElementById('search').value||'').toLowerCase();
+  var box=document.getElementById('filelist');
+  var shown=files.map(function(f,i){return {f:f,i:i}}).filter(function(x){return x.f.name.toLowerCase().indexOf(q)>=0});
+  if(!shown.length){box.innerHTML='<div class="empty">'+(files.length?'没有匹配的文件':'还没有加载文档<br>点上方「选择 md 文件」<br>可一次全选文件夹里的所有 md')+'</div>';return}
+  box.innerHTML=shown.map(function(x){
+    var kb=(x.f.size/1024).toFixed(1)+'K';
+    return '<div class="file'+(x.i===current?' active':'')+'" onclick="openFile('+x.i+')"><span class="ic">▤</span><span class="nm">'+esc(x.f.name)+'</span><span class="sz">'+kb+'</span></div>';
+  }).join('');
+}
+
+function openFile(i){
+  if(!files[i])return;
+  current=i;renderList();
+  document.getElementById('doc').innerHTML=parseMD(files[i].text);
+  document.getElementById('reader').scrollTop=0;
+  buildToc();
+  document.title=files[i].name+' · MD 阅读器';
+}
+
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function inline(s){
+  s=esc(s);
+  s=s.replace(/`([^`]+)`/g,'<code>$1</code>');
+  s=s.replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>');
+  s=s.replace(/(^|[^*])\*([^*]+)\*/g,'$1<em>$2</em>');
+  s=s.replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>');
+  return s;
+}
+
+function parseMD(md){
+  var codeBlocks=[];
+  md=md.replace(/```[a-zA-Z0-9]*\n?([\s\S]*?)```/g,function(m,code){
+    var i=codeBlocks.length;
+    codeBlocks.push('<pre><code>'+esc(code.replace(/\n$/,''))+'</code></pre>');
+    return '\n@@CB'+i+'@@\n';
+  });
+  var lines=md.split(/\r?\n/), out=[], i=0, para=[];
+
+  function flush(){
+    if(para.length){out.push('<p>'+inline(para.join(' '))+'</p>');para=[]}
+  }
+  function isTableSep(line){return /^\s*\|?[\s:\-\|]+\|[\s:\-\|]*$/.test(line)&&line.indexOf('-')>=0}
+
+  while(i<lines.length){
+    var line=lines[i];
+    if(/^@@CB\d+@@$/.test(line.trim())){flush();out.push(codeBlocks[parseInt(line.trim().slice(4))]);i++;continue}
+    if(!line.trim()){flush();i++;continue}
+
+    if(/^\s*\|/.test(line)&&i+1<lines.length&&isTableSep(lines[i+1])){
+      flush();
+      var head=line.trim().replace(/^\||\|$/g,'').split('|').map(function(s){return s.trim()});
+      i+=2;
+      var rows=[];
+      while(i<lines.length&&/^\s*\|/.test(lines[i])){
+        rows.push(lines[i].trim().replace(/^\||\|$/g,'').split('|').map(function(s){return s.trim()}));i++;
+      }
+      var t='<table><thead><tr>'+head.map(function(h){return '<th>'+inline(h)+'</th>'}).join('')+'</tr></thead><tbody>';
+      rows.forEach(function(r){t+='<tr>'+r.map(function(c){return '<td>'+inline(c)+'</td>'}).join('')+'</tr>'});
+      out.push(t+'</tbody></table>');continue;
+    }
+
+    var hm=line.match(/^(#{1,6})\s+(.*)$/);
+    if(hm){flush();var lv=hm[1].length;out.push('<h'+lv+'>'+inline(hm[2])+'</h'+lv+'>');i++;continue}
+
+    if(/^(\-\-\-|\*\*\*|___)\s*$/.test(line)){flush();out.push('<hr>');i++;continue}
+
+    if(/^\s*&gt;\s?/.test(line)||/^\s*>\s?/.test(line)){
+      flush();var q=[];
+      while(i<lines.length&&(/^\s*&gt;\s?/.test(lines[i])||/^\s*>\s?/.test(lines[i]))){
+        q.push(lines[i].replace(/^\s*(&gt;|>)\s?/,''));i++;
+      }
+      out.push('<blockquote><p>'+inline(q.join(' '))+'</p></blockquote>');continue;
+    }
+
+    var ul=line.match(/^\s*[-*+]\s+(.*)$/);
+    var ol=line.match(/^\s*\d+[\.\)]\s+(.*)$/);
+    if(ul||ol){
+      flush();var tag=ul?'ul':'ol',items=[];
+      var re=ul?/^\s*[-*+]\s+(.*)$/:/^\s*\d+[\.\)]\s+(.*)$/;
+      while(i<lines.length){var m=lines[i].match(re);if(!m)break;items.push('<li>'+inline(m[1])+'</li>');i++}
+      out.push('<'+tag+'>'+items.join('')+'</'+tag+'>');continue;
+    }
+
+    para.push(line.trim());i++;
+  }
+  flush();
+  return out.join('\n');
+}
+
+function buildToc(){
+  var doc=document.getElementById('doc');
+  var hs=doc.querySelectorAll('h2,h3');
+  var box=document.getElementById('tocLinks');
+  if(!hs.length){box.innerHTML='<span style="color:#8C9199">无标题</span>';return}
+  hs.forEach(function(h,idx){h.id='sec'+idx});
+  box.innerHTML=Array.prototype.map.call(hs,function(h,idx){
+    return '<a href="javascript:;" onclick="document.getElementById(\'sec'+idx+'\').scrollIntoView({behavior:\'smooth\'})" style="padding-left:'+(h.tagName==='H3'?12:0)+'px">'+esc(h.textContent)+'</a>';
+  }).join('');
+}
+
+function toggleToc(){document.getElementById('toc').classList.toggle('show')}
+
+/* 「打开方式」直达：启动器把文档以 base64 写进本页，双击 md 即直接打开对应文档 */
+(function(){
+  var p=window.__MD_PRELOAD__;
+  if(!p||!p.b)return;
+  function dec(s){var bin=atob(s),u=new Uint8Array(bin.length);for(var i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);return new TextDecoder('utf-8').decode(u)}
+  try{
+    var name=dec(p.n),text=dec(p.b);
+    files=[{name:name,size:text.length,text:text}];
+    renderList();openFile(0);
+    document.getElementById('hint').textContent='已载入：'+name;
+  }catch(e){document.getElementById('hint').textContent='预载失败：'+e.message}
+})();
+</script>
+</body>
+</html>

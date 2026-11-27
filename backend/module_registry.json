@@ -1,0 +1,66 @@
+{
+  "version": 1,
+  "codePrefix": "RB",
+  "modules": [
+    {
+      "key": "dashboard",
+      "name": "看板",
+      "order": 1,
+      "permission": "dashboard:view",
+      "route": "/dashboard",
+      "component": "DomainModuleView",
+      "functionId": "func_dashboard",
+      "description": "展示工单、生产报工、设备状态、质量检验等关键指标的汇总视图。"
+    },
+    {
+      "key": "person",
+      "name": "人员管理",
+      "order": 2,
+      "permission": "person:manage",
+      "route": "/person",
+      "component": "PersonManage",
+      "functionId": "func_person",
+      "description": "维护员工档案、部门/产线/班组归属、岗位角色与系统账号。"
+    },
+    {
+      "key": "machine",
+      "name": "设备管理",
+      "order": 3,
+      "permission": "machine:manage",
+      "route": "/machine",
+      "component": "DomainModuleView",
+      "functionId": "func_machine",
+      "description": "维护设备台账、运行/停机/维修状态与点检记录。"
+    },
+    {
+      "key": "material",
+      "name": "物料管理",
+      "order": 4,
+      "permission": "material:manage",
+      "route": "/material",
+      "component": "DomainModuleView",
+      "functionId": "func_material",
+      "description": "维护物料批次、工单领料、包装出库与追溯记录。"
+    },
+    {
+      "key": "method",
+      "name": "工艺管理",
+      "order": 5,
+      "permission": "method:manage",
+      "route": "/method",
+      "component": "DomainModuleView",
+      "functionId": "func_method",
+      "description": "维护工艺流程、作业指导、站点顺序与不良代码规则。"
+    },
+    {
+      "key": "environment",
+      "name": "环境配置",
+      "order": 6,
+      "permission": "environment:manage",
+      "route": "/environment",
+      "component": "DomainModuleView",
+      "functionId": "func_environment",
+      "description": "维护部门、产线、工位/站点、存储环境与软硬件配置。"
+    }
+  ]
+}

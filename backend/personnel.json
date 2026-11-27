@@ -1,0 +1,140 @@
+{
+  "version": 1,
+  "updatedAt": "2026-11-27T05:38:52.412092Z",
+  "persons": [
+    {
+      "username": "主管",
+      "department": "",
+      "position": "生产主管",
+      "parentUsername": "",
+      "phone": "",
+      "status": "active",
+      "moduleGrants": {
+        "machine": {
+          "view": false,
+          "operate": false,
+          "manage": false
+        },
+        "material": {
+          "view": false,
+          "operate": false,
+          "manage": false
+        },
+        "method": {
+          "view": false,
+          "operate": false,
+          "manage": false
+        },
+        "environment": {
+          "view": false,
+          "operate": false,
+          "manage": false
+        }
+      },
+      "notes": "",
+      "createdBy": "admin",
+      "createdAt": "2026-11-25T01:28:40.239758Z",
+      "updatedBy": "admin",
+      "updatedAt": "2026-11-27T04:50:59.560784Z",
+      "relatedStations": [],
+      "relatedProducts": [],
+      "relatedEquipment": []
+    },
+    {
+      "username": "工程",
+      "department": "",
+      "position": "装配技工",
+      "parentUsername": "",
+      "phone": "",
+      "status": "active",
+      "moduleGrants": {
+        "machine": {
+          "view": false,
+          "operate": false,
+          "manage": false
+        },
+        "material": {
+          "view": false,
+          "operate": false,
+          "manage": false
+        },
+        "method": {
+          "view": false,
+          "operate": false,
+          "manage": false
+        },
+        "environment": {
+          "view": false,
+          "operate": false,
+          "manage": false
+        }
+      },
+      "notes": "",
+      "createdBy": "admin",
+      "createdAt": "2026-11-25T01:31:26.151390Z",
+      "updatedBy": "admin",
+      "updatedAt": "2026-11-26T06:33:42.937819Z",
+      "relatedStations": [],
+      "relatedProducts": [],
+      "relatedEquipment": []
+    },
+    {
+      "username": "夹爪测试员",
+      "department": "",
+      "position": "质检员",
+      "parentUsername": "",
+      "phone": "",
+      "status": "active",
+      "moduleGrants": {
+        "machine": {
+          "view": false,
+          "operate": false,
+          "manage": false
+        },
+        "material": {
+          "view": false,
+          "operate": false,
+          "manage": false
+        },
+        "method": {
+          "view": false,
+          "operate": false,
+          "manage": false
+        },
+        "environment": {
+          "view": false,
+          "operate": false,
+          "manage": false
+        }
+      },
+      "notes": "",
+      "createdBy": "admin",
+      "createdAt": "2026-11-26T06:05:53.529278Z",
+      "updatedBy": "admin",
+      "updatedAt": "2026-11-27T01:37:21.677392Z",
+      "relatedStations": [
+        {
+          "code": "OP10",
+          "name": "V2.5夹爪测试"
+        }
+      ],
+      "relatedProducts": [
+        {
+          "code": "P0001",
+          "name": "V2.5无本体数采夹爪"
+        }
+      ],
+      "relatedEquipment": [
+        {
+          "code": "EQ0001",
+          "name": "V2.5夹爪工装"
+        }
+      ]
+    }
+  ],
+  "permissionOverrides": {
+    "夹爪测试员": [
+      "method:manage"
+    ]
+  }
+}
