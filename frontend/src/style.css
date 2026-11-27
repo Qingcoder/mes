@@ -82,9 +82,27 @@ body {
 }
 .brand b { font-size: 17px; display: block; line-height: 1.25; color: var(--white); }
 .brand small { font-size: 12px; color: rgba(255,255,255,.45); }
-.nav { padding: 14px 10px; flex: 1; }
+.nav { padding: 14px 10px; flex: 1; overflow-y: auto; }
 .nav-group { margin-bottom: 10px; }
 .nav-group-title { padding: 6px 14px 4px; font-size: 11px; letter-spacing: .12em; color: rgba(255,255,255,.38); text-transform: uppercase; }
+/* 菜单结构：没有从属关系的平铺；有父子关系的挂成可展开的树 */
+.nav-node { margin-bottom: 3px; }
+.nav-row { display: flex; align-items: stretch; gap: 2px; }
+.nav-row .nav-item { flex: 1; min-width: 0; }
+.nav-item.parent { font-weight: 500; }
+.nav-toggle {
+  flex: none; width: 30px; border: 0; background: transparent; cursor: pointer;
+  color: rgba(255,255,255,.42); font-size: 17px; border-radius: 6px; margin-bottom: 3px;
+}
+.nav-toggle:hover { color: var(--white); background: rgba(62,123,250,.12); }
+.nav-toggle span { display: inline-block; transition: transform .15s; }
+.nav-toggle span.rotated { transform: rotate(90deg); }
+.nav-children {
+  margin: 2px 0 6px 14px; padding-left: 10px;
+  border-left: 1px solid rgba(255,255,255,.12);
+}
+.nav-item.child { padding: 9px 12px; font-size: 14px; }
+.nav-item.child .ni { font-size: 15px; width: 20px; }
 .nav-item {
   display: flex; align-items: center; gap: 12px; padding: 12px 14px;
   border-radius: 6px; cursor: pointer; color: rgba(255,255,255,.65); margin-bottom: 3px;
@@ -105,6 +123,20 @@ body {
 .topbar > * { min-width: 0; }
 .topbar .role-badge { flex: none; }
 .topbar .sep { flex: 1 1 8px; min-width: 4px; }
+
+/* 页面顶部：同族子页快捷条 */
+.sub-nav {
+  display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+  padding: 0 0 12px; margin-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+}
+.sub-nav-item {
+  border: 1px solid var(--line); border-radius: 999px; padding: 5px 14px;
+  font-size: 13px; color: var(--muted); text-decoration: none; background: var(--white);
+  transition: .15s;
+}
+.sub-nav-item:hover { border-color: var(--tech-blue-line); color: var(--tech-blue); background: var(--tech-blue-soft); }
+.sub-nav-item.active { background: var(--tech-blue); border-color: var(--tech-blue); color: #fff; font-weight: 600; }
 
 /* 全局搜索 */
 .global-search { position: relative; width: clamp(220px, 28vw, 360px); min-width: 0; }
@@ -520,9 +552,13 @@ body { -webkit-tap-highlight-color: transparent; }
     z-index: 30;
   }
   .brand, .side-foot { display: none; }
-  .nav { display: flex; gap: 2px; padding: 5px 4px; width: 100%; }
+  .nav { display: flex; gap: 2px; padding: 5px 4px; width: 100%; overflow: visible; }
   .nav-group { display: contents; }
   .nav-group-title { display: none; }
+  /* 手机端底部 Tab 放不下树：只留顶层项，子项通过页面顶部的快捷条进入 */
+  .nav-node { display: contents; }
+  .nav-toggle { display: none; }
+  .nav-children { display: none; }
   .nav-item {
     flex: 1; min-width: 0; flex-direction: column; gap: 3px;
     justify-content: center; text-align: center; padding: 7px 2px;

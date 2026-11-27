@@ -62,9 +62,27 @@
         <small class="version-mark">生产管理平台 V1.0</small>
       </div>
       <nav class="nav">
-        <div v-for="group in menuGroups" :key="group.name" class="nav-group">
-          <div v-if="group.name !== '核心模块' && group.name !== '人机料法环'" class="nav-group-title">{{ group.name }}</div>
-          <router-link v-for="m in group.items" :key="m.path" class="nav-item" :to="m.path" active-class="active" :title="m.label"><AppIcon v-if="m.icon && !m.hideIcon" :name="m.icon" :size="18" :label="m.label" decorative /><span>{{ m.label }}</span></router-link>
+        <div v-for="node in menuTree" :key="node.path" class="nav-node">
+          <div class="nav-row" :class="{ expanded: isExpanded(node.path) }">
+            <router-link class="nav-item" :class="{ parent: node.children.length }" :to="node.path" active-class="active" :title="node.label">
+              <AppIcon v-if="node.icon && !node.hideIcon" :name="node.icon" :size="18" :label="node.label" decorative /><span>{{ node.label }}</span>
+            </router-link>
+            <button
+              v-if="node.children.length"
+              class="nav-toggle"
+              type="button"
+              :aria-expanded="isExpanded(node.path)"
+              :aria-label="(isExpanded(node.path) ? '收起 ' : '展开 ') + node.label"
+              @click.prevent="toggleNode(node.path)"
+            >
+              <span :class="{ rotated: isExpanded(node.path) }">›</span>
+            </button>
+          </div>
+          <div v-if="node.children.length && isExpanded(node.path)" class="nav-children">
+            <router-link v-for="child in node.children" :key="child.path" class="nav-item child" :to="child.path" active-class="active" :title="child.label">
+              <AppIcon v-if="child.icon && !child.hideIcon" :name="child.icon" :size="16" :label="child.label" decorative /><span>{{ child.label }}</span>
+            </router-link>
+          </div>
         </div>
       </nav>
       <div class="side-foot">戴盟（深圳）机器人科技有限公司<br>数据存于本机 · 手机浏览器访问</div>
@@ -143,6 +161,9 @@
       </header>
       <main class="content">
         <div v-if="configError" class="msg err config-error">路由权限配置错误：{{ configError }}</div>
+        <div v-if="siblingLinks.length" class="sub-nav">
+          <router-link v-for="item in siblingLinks" :key="item.path" class="sub-nav-item" :to="item.path" active-class="active">{{ item.label }}</router-link>
+        </div>
         <router-view />
       </main>
     </div>
@@ -203,28 +224,89 @@ watch(() => route.path, () => {
 
 const roles = ref<any[]>([])
 const configError = ref('')
-// 按 group 分组、order 排序，无权限的菜单项和整组都会被过滤掉。
-const menuGroups = computed(() => {
+
+interface MenuNode {
+  path: string
+  label: string
+  icon: string
+  hideIcon: boolean
+  perm: string
+  order: number
+  children: MenuNode[]
+}
+
+// 菜单结构：没有真实从属关系的平铺；有父子关系的挂成树（parent 字段声明）。
+// 顶层与子项都按 order 排序，无权限的项直接不出现（父项若没有可见子项则不显示箭头）。
+const menuTree = computed<MenuNode[]>(() => {
   const allowed = MENU_ROUTES.filter(r =>
     (!r.permission || myPerms.value.includes(r.permission)) && routeAllowsView(r.view, roleView.value),
   )
-  const groupMap = new Map<string, typeof allowed>()
-  allowed.forEach(r => {
-    const g = r.group || '其他'
-    if (!groupMap.has(g)) groupMap.set(g, [])
-    groupMap.get(g)!.push(r)
+  const nodes = new Map<string, MenuNode>()
+  allowed.forEach(r => nodes.set(r.path, {
+    path: r.path,
+    label: r.label || r.name,
+    icon: r.icon || '·',
+    hideIcon: !!r.hideIcon,
+    perm: r.permission || '',
+    order: r.order ?? 0,
+    children: [],
+  }))
+  const roots: MenuNode[] = []
+  nodes.forEach(node => {
+    const parentPath = MENU_ROUTES.find(r => r.path === node.path)?.parent
+    const parent = parentPath ? nodes.get(parentPath) : undefined
+    if (parent) parent.children.push(node)
+    else roots.push(node)
   })
-  return Array.from(groupMap, ([name, items]) => {
-    const sorted = [...items].sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
-    return {
-      name,
-      order: sorted[0]?.order ?? 0,
-      items: sorted.map(r => ({ path: r.path, label: r.label || r.name, icon: r.icon || '·', hideIcon: !!(r as any).hideIcon, perm: r.permission || '' })),
-    }
-  }).sort((a, b) => a.order - b.order)
+  const byOrder = (a: MenuNode, b: MenuNode) => a.order - b.order
+  roots.sort(byOrder)
+  roots.forEach(node => node.children.sort(byOrder))
+  return roots
 })
+
+// 展开状态：记在本地；进入子页面时自动展开它的父级。
+const NAV_EXPANDED_KEY = 'mes_nav_expanded'
+const expandedPaths = ref<string[]>(readExpanded())
+function readExpanded(): string[] {
+  try {
+    const raw = localStorage.getItem(NAV_EXPANDED_KEY)
+    const list = raw ? JSON.parse(raw) : []
+    return Array.isArray(list) ? list.map(String) : []
+  } catch { return [] }
+}
+function persistExpanded() {
+  try { localStorage.setItem(NAV_EXPANDED_KEY, JSON.stringify(expandedPaths.value)) } catch { /* 忽略存储失败 */ }
+}
+function isExpanded(path: string) { return expandedPaths.value.includes(path) }
+function toggleNode(path: string) {
+  expandedPaths.value = isExpanded(path)
+    ? expandedPaths.value.filter(item => item !== path)
+    : [...expandedPaths.value, path]
+  persistExpanded()
+}
+function expandAncestors(path: string) {
+  const route = MENU_ROUTES.find(r => r.path === path)
+  const parent = route?.parent
+  if (!parent || isExpanded(parent)) return
+  expandedPaths.value = [...expandedPaths.value, parent]
+  persistExpanded()
+}
+watch(() => route.path, path => expandAncestors(path), { immediate: true })
 // 扁平列表供角色切换后决定跳转的首页，保持与分组菜单一致。
-const visibleNav = computed(() => menuGroups.value.flatMap(g => g.items))
+const visibleNav = computed(() => menuTree.value.flatMap(node => [node, ...node.children]))
+
+// 当前页所属父项下的兄弟子页：顶部快捷条（手机端底部 Tab 放不下树，靠它进子页）
+const siblingLinks = computed(() => {
+  const current = MENU_ROUTES.find(r => r.path === route.path)
+  if (!current) return []
+  const parentPath = current.parent || (current.menu ? current.path : '')
+  if (!parentPath) return []
+  return MENU_ROUTES
+    .filter(r => r.menu && r.parent === parentPath)
+    .filter(r => !r.permission || myPerms.value.includes(r.permission))
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+    .map(r => ({ path: r.path, label: r.label || r.name }))
+})
 
 async function refreshPermissions() {
   try {
