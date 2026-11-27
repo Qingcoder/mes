@@ -90,6 +90,8 @@ class UnitLine(BaseModel):
     state: str
     fail_code: Optional[str] = None
     box_no: Optional[str] = None
+    origin_sn: Optional[str] = None      # 被替换掉的原始 SN（替换链可见）
+    replaced_count: int = 0
 
     class Config:
         from_attributes = True

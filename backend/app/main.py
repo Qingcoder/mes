@@ -431,11 +431,20 @@ def import_sns(wo_id: int, body: SNImportIn, db: Session = Depends(get_db)):
         preview = "、".join(invalid[:5])
         more = f" 等 {len(invalid)} 条" if len(invalid) > 5 else ""
         raise HTTPException(400, f"SN 格式错误：{preview}{more}；要求 16 位大写字母或数字")
-    unique = list(dict.fromkeys(normalized))
-    added, skipped = 0, []
+    unique: List[str] = []
+    seen_in_batch = set()
+    skipped: List[str] = []
+    for sn in normalized:
+        if sn in seen_in_batch:
+            # 同批次重复：幂等跳过，但要回报给前端（前端要展示 skipped 清单）
+            skipped.append(sn)
+            continue
+        seen_in_batch.add(sn)
+        unique.append(sn)
+    added = 0
     for sn in unique:
         if db.query(models.Unit).filter_by(sn=sn).first():
-            skipped.append(sn)   # 幂等：重复 SN 跳过
+            skipped.append(sn)   # 幂等：库里已存在的 SN 跳过
             continue
         db.add(models.Unit(sn=sn, wo_id=wo_id, state="pending"))
         added += 1
@@ -495,6 +504,9 @@ def replace_sn(body: SnReplaceIn, db: Session = Depends(get_db)):
         raise HTTPException(400, "新 SN 已被其他设备使用")
     if db.query(models.SnReplacement).filter_by(new_sn=new_sn).first():
         raise HTTPException(400, "新 SN 已被替换使用过")
+    if db.query(models.SnReplacement).filter_by(old_sn=new_sn).first():
+        # 已被换下的旧 SN 只能作历史来源，不能再当新标投入使用
+        raise HTTPException(400, "新 SN 已被替换过，不能重新投入使用")
 
     wo = db.get(models.WorkOrder, unit.wo_id)
     stations = list(wo.stations or []) if wo else []

@@ -26,7 +26,8 @@ def _sn(prefix: str = "T") -> str:
     return (prefix + body)[:16]
 
 
-def _create_wo(client, auth, stations, pack_qty=2, product="BACKPACK"):
+def _create_wo(client, auth, stations, pack_qty=2, product="GRIPPER"):
+    """默认用 GRIPPER：它有产品档案（BACKPACK 只有老表条目、没有档案，建单会被拒）。"""
     r = client.post("/api/wos", headers=auth,
                     json={"product": product, "stations": stations, "pack_qty": pack_qty})
     assert r.status_code == 200, r.text
@@ -67,6 +68,19 @@ def test_login_wrong_password(client):
 
 def test_api_requires_token(client):
     assert client.get("/api/wos").status_code == 401
+
+
+# ---------------------------------------------------------------- 产品档案前置
+def test_wo_requires_product_profile(client, auth):
+    """产品必须已有产品档案。
+
+    产品↔站点的关联写在产品档案里；选没有档案的产品建单，关联无处落地，
+    流程-站点-产品这条链路就断了，所以服务端直接拒绝并说明去哪儿建档。
+    """
+    r = client.post("/api/wos", headers=auth,
+                    json={"product": "BACKPACK", "stations": [ST_A], "pack_qty": 1})
+    assert r.status_code == 400, r.text
+    assert "档案" in r.json()["detail"]
 
 
 # ---------------------------------------------------------------- 主链路
