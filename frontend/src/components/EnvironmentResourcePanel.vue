@@ -3,7 +3,7 @@
     <div class="panel-head">
       <div>
         <h3>共享资料库</h3>
-        <p class="sub">统一上传、查看、下载和更新文件；可关联人员、产品、设备与工艺，进入页面自动拉取最新资料。</p>
+        <p class="sub">统一查看、下载与检索共享资料；资料可关联人员、产品、设备与工艺，进入页面自动拉取最新资料。</p>
       </div>
       <div class="row">
         <button class="btn sm" type="button" :disabled="loading" @click="reload">刷新</button>
@@ -16,7 +16,6 @@
     </div>
 
     <div v-if="error" class="msg err">{{ error }}</div>
-    <div v-if="notice" class="msg ok">{{ notice }}</div>
 
     <template v-if="tab === 'overview'">
       <div v-if="loading" class="empty">加载总览…</div>
@@ -41,33 +40,8 @@
     </template>
 
     <template v-else>
-      <div class="upload-box" :class="{ active: dragging }" @dragover.prevent="dragging = true" @dragenter.prevent="dragging = true" @dragleave.prevent="dragging = false" @drop.prevent="onDrop">
-        <div class="upload-title">拖拽文件到这里，或点击选择</div>
-        <input ref="fileInput" class="native-file-input" type="file" multiple @change="onFileChange" />
-        <button v-if="canManage" class="btn sm" type="button" @click="fileInput?.click()">选择文件</button>
-        <div v-if="selectedFiles.length" class="selected-files">{{ selectedFiles.map(f => f.name).join('、') }}</div>
-        <div class="upload-form">
-          <label>所属模块
-            <select v-model="form.module">
-              <option v-for="item in moduleOptions" :key="item.key" :value="item.key">{{ item.label }}</option>
-            </select>
-          </label>
-          <label>资料类别
-            <select v-model="form.category">
-              <option v-for="c in categories" :key="c" :value="c">{{ c }}</option>
-            </select>
-          </label>
-          <label>标题<input v-model="form.title" placeholder="可选，默认用文件名" /></label>
-          <label>说明<input v-model="form.description" placeholder="可选" /></label>
-        </div>
-        <div class="relation-grid">
-          <label>关联人员<select v-model="form.relatedPersons" multiple><option v-for="item in options.persons" :key="'p-' + item.code" :value="item.code">{{ item.name }}（{{ item.code }}）</option></select></label>
-          <label>关联产品<select v-model="form.relatedProducts" multiple><option v-for="item in options.products" :key="'pr-' + item.code" :value="item.code">{{ item.code }} · {{ item.name }}</option></select></label>
-          <label>关联设备<select v-model="form.relatedEquipment" multiple><option v-for="item in options.equipment" :key="'e-' + item.code" :value="item.code">{{ item.code }} · {{ item.name }}</option></select></label>
-          <label>关联工艺<select v-model="form.relatedStations" multiple><option v-for="item in options.stations" :key="'s-' + item.code" :value="item.code">{{ item.code }} · {{ item.name }}</option></select></label>
-        </div>
-        <button v-if="canManage" class="btn primary" type="button" :disabled="uploading" @click="upload">{{ uploading ? '上传中…' : '上传资料' }}</button>
-        <p class="mini">任意文件均可上传，支持一次选择多个；单个文件最大 200MB。</p>
+      <div class="readonly-note">
+        当前为<b>只读</b>查看：可查看、下载、检索与查看版本记录；上传与编辑入口迁移中，暂不可用。
       </div>
 
       <div class="toolbar">
@@ -106,8 +80,6 @@
                 <button class="link" type="button" @click="view(row)">查看</button>
                 <button class="link" type="button" @click="download(row)">下载</button>
                 <button class="link" type="button" @click="openHistory(row)">历史</button>
-                <button v-if="canManage" class="link" type="button" @click="openEdit(row)">编辑</button>
-                <button v-if="canManage" class="link danger-link" type="button" @click="remove(row)">删除</button>
               </td>
             </tr>
             <tr v-if="!resources.length"><td colspan="8" class="empty">暂无资料</td></tr>
@@ -115,38 +87,6 @@
         </table>
       </div>
     </template>
-
-    <div v-if="editOpen" class="modal-mask" @click.self="editOpen = false">
-      <div class="modal" role="dialog" aria-modal="true">
-        <div class="panel-head"><b>编辑资料信息</b><button class="btn sm" type="button" @click="editOpen = false">关闭</button></div>
-        <div v-if="formError" class="msg err">{{ formError }}</div>
-        <div class="form-grid">
-          <label>标题<input v-model="editForm.title" /></label>
-          <label>模块
-            <select v-model="editForm.module">
-              <option v-for="item in moduleOptions" :key="item.key" :value="item.key">{{ item.label }}</option>
-            </select>
-          </label>
-          <label>类别
-            <select v-model="editForm.category">
-              <option v-for="c in categories" :key="c" :value="c">{{ c }}</option>
-            </select>
-          </label>
-          <label>说明<input v-model="editForm.description" /></label>
-          <label class="full">版本说明<input v-model="editForm.versionNote" placeholder="本次更新了什么" /></label>
-        </div>
-        <div class="relation-grid">
-          <label>关联人员<select v-model="editForm.relatedPersons" multiple><option v-for="item in options.persons" :key="'ep-' + item.code" :value="item.code">{{ item.name }}（{{ item.code }}）</option></select></label>
-          <label>关联产品<select v-model="editForm.relatedProducts" multiple><option v-for="item in options.products" :key="'epr-' + item.code" :value="item.code">{{ item.code }} · {{ item.name }}</option></select></label>
-          <label>关联设备<select v-model="editForm.relatedEquipment" multiple><option v-for="item in options.equipment" :key="'ee-' + item.code" :value="item.code">{{ item.code }} · {{ item.name }}</option></select></label>
-          <label>关联工艺<select v-model="editForm.relatedStations" multiple><option v-for="item in options.stations" :key="'es-' + item.code" :value="item.code">{{ item.code }} · {{ item.name }}</option></select></label>
-        </div>
-        <div class="modal-foot">
-          <button class="btn" type="button" @click="editOpen = false">取消</button>
-          <button class="btn primary" type="button" @click="saveEdit">保存</button>
-        </div>
-      </div>
-    </div>
 
     <div v-if="historyOpen" class="modal-mask" @click.self="historyOpen = false">
       <div class="modal" role="dialog" aria-modal="true">
@@ -166,27 +106,16 @@
 
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
-import { api, getUser } from '../api'
-import { sharedPerms } from '../stores/permStore'
+import { api } from '../api'
 
 const tab = ref<'overview' | 'resources'>('resources')
 const loading = ref(false)
-const uploading = ref(false)
-const dragging = ref(false)
-const selectedFiles = ref<File[]>([])
 const historyOpen = ref(false)
 const historyRows = ref<any[]>([])
 const historyTitle = ref('')
 const error = ref('')
-const notice = ref('')
-const formError = ref('')
-const fileInput = ref<HTMLInputElement | null>(null)
 const modules = ref<any[]>([])
 const resources = ref<any[]>([])
-const editOpen = ref(false)
-const editForm = reactive<any>({ id: '', title: '', module: '', category: '', description: '', versionNote: '', relatedPersons: [], relatedProducts: [], relatedEquipment: [], relatedStations: [] })
-const form = reactive<any>({ module: 'environment', category: '制度文件', title: '', description: '', relatedPersons: [], relatedProducts: [], relatedEquipment: [], relatedStations: [] })
-const options = reactive<any>({ persons: [], products: [], equipment: [], processes: [], stations: [] })
 const filters = reactive<any>({ module: '', category: '', q: '' })
 const categories = ['制度文件', '作业指导', '图纸规范', '检验报告', '设备资料', '培训资料', '会议纪要', '其他']
 const defaultModules = [
@@ -197,7 +126,6 @@ const defaultModules = [
   { key: 'pack', label: '包装管理' }, { key: 'query', label: '数据查询' },
   { key: 'quality', label: '质量控制' }, { key: 'account', label: '账户权限' },
 ]
-const canManage = computed(() => getUser()?.role === 'admin' || sharedPerms.value.includes('environment:manage'))
 const moduleOptions = computed(() => modules.value.length ? modules.value : defaultModules)
 
 function moduleLabel(key: string) {
@@ -206,21 +134,6 @@ function moduleLabel(key: string) {
 function relationText(row: any) {
   const fields = ['relatedPersons', 'relatedProducts', 'relatedEquipment', 'relatedStations']
   return fields.flatMap(field => (row?.[field] || []).map((item: any) => item.name || item.code)).join('、')
-}
-function relationObjects(codes: string[], field: string) {
-  const list = options[field] || []
-  return (codes || []).map(code => {
-    const item = list.find((row: any) => row.code === code)
-    return { code, name: item?.name || code }
-  })
-}
-function onFileChange(event: Event) {
-  const input = event.target as HTMLInputElement
-  selectedFiles.value = Array.from(input.files || [])
-}
-function onDrop(event: DragEvent) {
-  dragging.value = false
-  selectedFiles.value = Array.from(event.dataTransfer?.files || [])
 }
 function formatSize(size: number) {
   const n = Number(size) || 0
@@ -235,14 +148,8 @@ async function reload() {
   loading.value = true
   error.value = ''
   try {
-    const [overview, optionData] = await Promise.all([api.environmentOverview(), api.environmentOptions()])
+    const overview = await api.environmentOverview()
     modules.value = overview.modules || []
-    Object.assign(options, {
-      persons: optionData.persons || [],
-      products: optionData.products || [],
-      equipment: optionData.equipment || [],
-      stations: optionData.stations || optionData.processes || [],
-    })
     await loadResources()
   } catch (e: any) {
     error.value = e.message || '环境总览加载失败'
@@ -255,43 +162,6 @@ async function loadResources() {
     resources.value = await api.environmentResources({ ...filters })
   } catch (e: any) {
     error.value = e.message || '资料列表加载失败'
-  }
-}
-async function upload() {
-  if (!selectedFiles.value.length) { error.value = '请选择文件'; return }
-  uploading.value = true
-  error.value = ''
-  notice.value = ''
-  let success = 0
-  const failed: string[] = []
-  try {
-    for (const file of selectedFiles.value) {
-      const data = new FormData()
-      data.append('title', form.title || file.name.replace(/\.[^.]+$/, ''))
-      data.append('module', form.module)
-      data.append('category', form.category)
-      data.append('description', form.description)
-      data.append('relatedPersons', JSON.stringify(relationObjects(form.relatedPersons, 'persons')))
-      data.append('relatedProducts', JSON.stringify(relationObjects(form.relatedProducts, 'products')))
-      data.append('relatedEquipment', JSON.stringify(relationObjects(form.relatedEquipment, 'equipment')))
-      data.append('relatedStations', JSON.stringify(relationObjects(form.relatedStations, 'stations')))
-      data.append('file', file)
-      try {
-        await api.uploadEnvironmentResource(data)
-        success += 1
-      } catch (e: any) {
-        failed.push(`${file.name}：${e.message || '上传失败'}`)
-      }
-    }
-    form.title = ''
-    form.description = ''
-    selectedFiles.value = []
-    if (fileInput.value) fileInput.value.value = ''
-    notice.value = `成功上传 ${success} 个文件${failed.length ? '，失败 ' + failed.length + ' 个' : ''}`
-    if (failed.length) error.value = failed.join('；')
-    await loadResources()
-  } finally {
-    uploading.value = false
   }
 }
 async function openFile(blob: Blob, fileName: string, view: boolean) {
@@ -314,52 +184,10 @@ async function download(row: any) {
   try { openFile(await api.downloadEnvironmentResource(row.id), row.fileName, false) }
   catch (e: any) { error.value = e.message || '资料下载失败' }
 }
-function openEdit(row: any) {
-  formError.value = ''
-  editForm.id = row.id
-  editForm.title = row.title
-  editForm.module = row.module
-  editForm.category = row.category
-  editForm.description = row.description || ''
-  editForm.versionNote = ''
-  editForm.relatedPersons = (row.relatedPersons || []).map((item: any) => item.code)
-  editForm.relatedProducts = (row.relatedProducts || []).map((item: any) => item.code)
-  editForm.relatedEquipment = (row.relatedEquipment || []).map((item: any) => item.code)
-  editForm.relatedStations = (row.relatedStations || row.relatedProcesses || []).map((item: any) => item.code)
-  editOpen.value = true
-}
 function openHistory(row: any) {
   historyTitle.value = row.title || row.fileName || ''
   historyRows.value = [...(row.history || [])].reverse()
   historyOpen.value = true
-}
-async function saveEdit() {
-  try {
-    await api.updateEnvironmentResource(editForm.id, {
-      title: editForm.title, module: editForm.module,
-      category: editForm.category, description: editForm.description,
-      versionNote: editForm.versionNote,
-      relatedPersons: relationObjects(editForm.relatedPersons, 'persons'),
-      relatedProducts: relationObjects(editForm.relatedProducts, 'products'),
-      relatedEquipment: relationObjects(editForm.relatedEquipment, 'equipment'),
-      relatedStations: relationObjects(editForm.relatedStations, 'stations'),
-    })
-    editOpen.value = false
-    notice.value = '资料信息已保存'
-    await loadResources()
-  } catch (e: any) {
-    formError.value = e.message || '资料保存失败'
-  }
-}
-async function remove(row: any) {
-  if (!window.confirm(`确认删除资料 ${row.title}？`)) return
-  try {
-    await api.deleteEnvironmentResource(row.id)
-    notice.value = '资料已删除'
-    await loadResources()
-  } catch (e: any) {
-    error.value = e.message || '资料删除失败'
-  }
 }
 
 onMounted(reload)
@@ -367,6 +195,16 @@ onMounted(reload)
 
 <style scoped>
 .resource-panel { margin-bottom: 12px; }
+.readonly-note {
+  border: 1px solid var(--tech-blue-line);
+  background: var(--tech-blue-soft);
+  color: var(--ink);
+  border-radius: 7px;
+  padding: 9px 12px;
+  font-size: 12px;
+  margin-bottom: 10px;
+}
+.readonly-note b { color: var(--tech-blue); }
 .panel-head { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
 h3 { font-size: 16px; }
 .sub, .mini, .desc { color: var(--muted); }

@@ -190,6 +190,20 @@
 
 ---
 
+## R-20 | ENV.READONLY | P1 | DONE
+
+- 需求：共享资料库**先只做查看和查询，不能改**；写入/编辑功能用户会在别处实现。
+- 实现（前后端双层拦截）：
+  - 后端 `routers/environment.py`：新增 `_readonly_mode()`（读环境变量 `MES_ENVIRONMENT_READONLY`，默认 "1" 即只读）与 `_readonly_guard()`；上传 `POST /resources`、编辑 `PUT /resources/{id}`、删除 `DELETE /resources/{id}` 三个写接口挂 `dependencies=[Depends(_readonly_guard)]`，只读时返回 403「共享资料库当前为只读模式，写入入口迁移中」。
+  - **闸门必须挂路由依赖、不能写函数体**：FastAPI 先做请求体校验再进函数体，写函数体等于先把整个上传文件收完才拒绝。
+  - 前端 `components/EnvironmentResourcePanel.vue`：移除上传区（拖拽/选择/表单/关联对象）、行内「编辑」「删除」按钮与编辑弹窗，并清掉相应死代码（upload/openEdit/saveEdit/remove/options/form 等）；保留查看、下载、历史、模块/类别/关键词检索、刷新、模块总览；页面加只读提示条。
+- 放开方式：把环境变量 `MES_ENVIRONMENT_READONLY` 设为 0（false/off 亦可）即恢复写入，无需改代码；用户后续在别处实现写入功能时可直接复用这套接口。
+- 验收：隔离环境（8017 只读 + 8018 可写）HTTP 自测 9/9 PASS —— 列表/总览/选项可查；上传/编辑/删除均 403 且提示只读；未登录 401；开关置 0 后写入口放行。vite build 通过。
+- 遗留：`StationMasterPanel`（自定义站点/站点分组）仍挂在同一页面且可写，与「自定义站点」页功能重复，待用户确认收敛到哪一处。
+- 来源：D11-27
+
+---
+
 ## 待确认（ASK）
 
 - A1 服务是否配开机自启？用户曾问未答。（R-09）

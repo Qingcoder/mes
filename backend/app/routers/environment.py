@@ -1,5 +1,6 @@
 """环境配置接口：全局资料库与模块基础信息总览。"""
 import json
+import os
 from typing import Dict, List
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
@@ -27,6 +28,25 @@ def _require_manage(db: Session, account: models.Account) -> str:
     if account.role != "admin" and "environment:manage" not in codes:
         raise HTTPException(403, "当前账号无环境配置权限")
     return account.username
+
+
+def _readonly_mode() -> bool:
+    """共享资料库当前只读：写入能力迁往新模块，这里留开关以便后续放开。
+
+    默认只读；把环境变量 MES_ENVIRONMENT_READONLY 设为 0/false/off 可恢复写入。
+    """
+    value = os.getenv("MES_ENVIRONMENT_READONLY", "1").strip().lower()
+    return value not in ("0", "false", "off", "no")
+
+
+def _readonly_guard() -> None:
+    """只读闸门（路由依赖）。
+
+    必须挂在路由依赖上而不是函数体里：FastAPI 会先校验请求体再进函数体，
+    放在函数体里等于先把整个上传文件收完再拒绝。
+    """
+    if _readonly_mode():
+        raise HTTPException(403, "共享资料库当前为只读模式，写入入口迁移中，暂不可上传/编辑/删除")
 
 
 def _count(fn, default=0):
@@ -86,7 +106,7 @@ def resources(
     return environment_store.list_resources(module, category, q)
 
 
-@router.post("/resources")
+@router.post("/resources", dependencies=[Depends(_readonly_guard)])
 async def upload_resource(
     title: str = Form(...),
     module: str = Form(...),
@@ -121,7 +141,7 @@ async def upload_resource(
     return meta
 
 
-@router.put("/resources/{resource_id}")
+@router.put("/resources/{resource_id}", dependencies=[Depends(_readonly_guard)])
 def update_resource(
     resource_id: str,
     payload: dict,
@@ -156,7 +176,7 @@ def download_resource(
     return FileResponse(path, filename=row.get("fileName") or resource_id, media_type=row.get("contentType"))
 
 
-@router.delete("/resources/{resource_id}")
+@router.delete("/resources/{resource_id}", dependencies=[Depends(_readonly_guard)])
 def delete_resource(
     resource_id: str,
     account: models.Account = Depends(auth.current_account),
