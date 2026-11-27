@@ -3,8 +3,9 @@ export type AppIconKey =
   | 'access' | 'site' | 'role'
   | 'dashboard' | 'person' | 'machine' | 'material' | 'method' | 'environment'
   | 'search' | 'scan' | 'default'
+  | 'check' | 'circleCheck' | 'clock' | 'wrench' | 'lock' | 'building' | 'alert' | 'chevronRight' | 'clipboard' | 'operator' | 'barcode'
 
-export type AppIconSet = 'production' | 'system' | 'domain' | 'common'
+export type AppIconSet = 'production' | 'system' | 'domain' | 'common' | 'station'
 
 export interface AppIconMeta {
   label: string

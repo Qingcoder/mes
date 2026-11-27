@@ -194,9 +194,19 @@ def normalize_flows(flows: List[Any]) -> List[Dict[str, Any]]:
     return result
 
 
+def _migrate_station_record_remark(db: Session) -> None:
+    """幂等补齐过站记录的备注列（create_all 不会给已有表加列）。"""
+    from sqlalchemy import text
+    columns = {row[1] for row in db.execute(text("PRAGMA table_info(station_records)")).fetchall()}
+    if "remark" not in columns:
+        db.execute(text("ALTER TABLE station_records ADD COLUMN remark VARCHAR(256)"))
+    db.commit()
+
+
 def seed(db: Session):
     _migrate_sn_replace_columns(db)
     _migrate_wo_flows_column(db)
+    _migrate_station_record_remark(db)
     ensure_default_permissions(db)
     if db.query(models.Account).count() == 0:
         db.add(models.Account(username="admin", password="123456", name="系统管理员", role="admin"))
@@ -610,7 +620,8 @@ def station(body: StationIn, db: Session = Depends(get_db)):
 
     db.add(models.StationRecord(
         unit_id=u.id, station=body.station, result=result,
-        fail_code=body.fail_code, operator=body.operator,
+        fail_code=body.fail_code, remark=(body.remark or "").strip()[:256] or None,
+        operator=body.operator,
         source_type="station",
     ))
     write_audit(db, body.operator or "system", f"station.{result}", body.sn,

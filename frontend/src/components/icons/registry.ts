@@ -17,6 +17,17 @@ const META: Record<AppIconKey, AppIconMeta> = {
   search: { label: '全局搜索', glyph: '⌕', set: 'system' },
   scan: { label: '应用内扫码', glyph: '⌖', set: 'system' },
   default: { label: '功能模块', glyph: '•', set: 'common' },
+  check: { label: '通过', glyph: '✓', set: 'station' },
+  circleCheck: { label: '已完成', glyph: '✓', set: 'station' },
+  clock: { label: '待过站', glyph: '◷', set: 'station' },
+  wrench: { label: '维修站', glyph: '⚒', set: 'station' },
+  lock: { label: '锁定', glyph: '⚿', set: 'station' },
+  building: { label: '不良上报', glyph: '⌂', set: 'station' },
+  alert: { label: '警告', glyph: '⚠', set: 'station' },
+  chevronRight: { label: '进入', glyph: '›', set: 'station' },
+  clipboard: { label: '工单', glyph: '▤', set: 'station' },
+  operator: { label: '操作员', glyph: '◉', set: 'station' },
+  barcode: { label: '扫码输入', glyph: '⌗', set: 'station' },
 }
 
 const LOADERS: Record<AppIconSet, () => Promise<{ default: Record<string, string[]> }>> = {
@@ -24,6 +35,7 @@ const LOADERS: Record<AppIconSet, () => Promise<{ default: Record<string, string
   system: () => import('./sets/system'),
   domain: () => import('./sets/domain'),
   common: () => import('./sets/common'),
+  station: () => import('./sets/station'),
 }
 
 const cache = new Map<AppIconSet, Promise<Record<string, string[]>>>()

@@ -122,6 +122,58 @@ def resolve_sn(
         raise HTTPException(400, str(exc))
 
 
+@router.get("/station-stats")
+def station_stats(
+    route: str = Query("/station"),
+    account: models.Account = Depends(auth.current_account),
+    db: Session = Depends(get_db),
+):
+    """今日本站的通过/不良数量（工位看板用）。
+
+    统计口径：当前工单 + 当前站点 + 本地自然日。
+    过站记录里的 created_at 存的是 UTC，因此这里把本地零点换算成 UTC 边界再查。
+    """
+    username = _require_station_access(db, account)
+    config = _route_config(route)
+    try:
+        ctx = integration.station_context_for_route(db, config, username)
+    except ValueError as exc:
+        raise HTTPException(400, str(exc))
+    flow = ctx.get("flow") or []
+    if not flow:
+        return {"station": "", "date": "", "passed": 0, "failed": 0}
+    station_id = str(flow[0].get("id") or "")
+    from datetime import datetime, timedelta, timezone
+    local_tz = timezone(timedelta(hours=8))
+    now_local = datetime.now(local_tz)
+    start_local = now_local.replace(hour=0, minute=0, second=0, microsecond=0)
+    start_utc = start_local.astimezone(timezone.utc).replace(tzinfo=None)
+    end_utc = (start_local + timedelta(days=1)).astimezone(timezone.utc).replace(tzinfo=None)
+    wo_id = int(ctx["wo"]["id"])
+    unit_ids = [row[0] for row in db.query(models.Unit.id).filter_by(wo_id=wo_id).all()]
+    passed = failed = 0
+    if unit_ids:
+        rows = db.query(models.StationRecord.result, models.StationRecord.unit_id).filter(
+            models.StationRecord.unit_id.in_(unit_ids),
+            models.StationRecord.station == station_id,
+            models.StationRecord.created_at >= start_utc,
+            models.StationRecord.created_at < end_utc,
+        ).all()
+        for result, unit_id in rows:
+            # 同一 SN 同站重复提交只算一次（幂等去重）
+            if result == "pass":
+                passed += 1
+            elif result == "fail":
+                failed += 1
+    return {
+        "station": station_id,
+        "stationName": str(flow[0].get("name") or station_id),
+        "date": now_local.strftime("%Y-%m-%d"),
+        "passed": passed,
+        "failed": failed,
+    }
+
+
 @router.get("/config")
 def get_config():
     return integration.load_config()

@@ -43,6 +43,7 @@ class StationIn(BaseModel):
     station: str
     result: str          # pass / fail
     fail_code: Optional[str] = None
+    remark: Optional[str] = None   # 不良备注（仅 fail 时使用）
     operator: Optional[str] = None
     rev: Optional[int] = None
 

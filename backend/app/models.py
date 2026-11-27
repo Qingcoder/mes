@@ -90,6 +90,7 @@ class StationRecord(Base):
     station = Column(String(64), nullable=False)
     result = Column(String(16), nullable=False)   # pass/fail/rework
     fail_code = Column(String(64))
+    remark = Column(String(256))           # 不良备注（现场填写的不良说明）
     source_type = Column(String(32), default="station")  # 预留统一待检队列
     operator = Column(String(64))
     created_at = Column(DateTime, default=datetime.utcnow)

@@ -40,7 +40,8 @@
 
   <!-- 专注作业页：只保留过站与详情，隐藏其他前端入口 -->
   <div v-else-if="isFocus" class="focus-app">
-    <div class="focus-actions">
+    <!-- 站点作业页自带顶栏，这里不再重复一条操作条 -->
+    <div v-if="route.path !== '/station'" class="focus-actions">
       <span class="focus-role">{{ roleViewLabel }}</span>
       <button v-if="route.path === '/station'" class="focus-link" @click="router.push('/sn-detail')">详情</button>
       <button v-else class="focus-link" @click="router.push('/station')">过站</button>
@@ -48,7 +49,7 @@
       <button v-if="canManageAccess && route.path !== '/access-control'" class="focus-link" @click="router.push('/access-control')">权限</button>
       <button class="focus-link" @click="logout">退出</button>
     </div>
-    <main class="focus-content">
+    <main class="focus-content" :class="{ bare: route.path === '/station' }">
       <div v-if="route.query.denied" class="msg err">无权限访问：{{ route.query.denied }}</div>
       <router-view />
     </main>
@@ -222,7 +223,8 @@ const isStandalone = computed(() => route.path === '/entry' || route.path === '/
 const roleView = computed(() => roleViewOf(user.value?.role || '', myPerms.value))
 const roleViewLabel = computed(() => ROLE_VIEW_LABEL[roleView.value])
 const isAdminConsole = computed(() => roleView.value === 'admin')
-const isFocus = computed(() => !!findAppRoute(route.path)?.focus && !isAdminConsole.value)
+// 站点作业是工位形态（整屏作业台），所有账号都走专注布局，不显示侧边导航
+const isFocus = computed(() => !!findAppRoute(route.path)?.focus)
 const canManageAccess = computed(() => hasAccessManagePerm(myPerms.value))
 const canSwitchRole = computed(() => hasPerm(myPerms.value, 'system:role:manage') || user.value?.role === 'admin')
 const title = computed(() => findAppRoute(route.path)?.label || '戴盟 MES 生产管理平台')

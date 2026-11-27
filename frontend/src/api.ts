@@ -264,6 +264,7 @@ export const api = {
   unifiedResolveSn: (sn: string, route = '/station') => req<any>(`/api/unified/resolve-sn?route=${encodeURIComponent(route)}`, { sn }),
   unifiedQuerySn: (sn: string, source = '') => req<any>(`/api/unified/query/sn/${encodeURIComponent(sn)}?source=${encodeURIComponent(source)}`),
   unifiedStationContext: (route = '/station') => req<any>(`/api/unified/station-context?route=${encodeURIComponent(route)}`),
+  unifiedStationStats: (route = '/station') => req<any>(`/api/unified/station-stats?route=${encodeURIComponent(route)}`),
   permissions: () => req<any[]>('/api/permissions'),
   roles: (keyword = '') => req<any[]>(`/api/roles?keyword=${encodeURIComponent(keyword)}`),
   nextRoleCode: () => req<{ code: string }>('/api/roles/next-code'),

@@ -316,6 +316,7 @@ tr:hover td { background: var(--tech-blue-soft); }
 .role-badge.user { background: #f5f6f8; color: var(--gray); border-color: var(--line); }
 .focus-link:hover { color: var(--tech-blue); border-color: var(--tech-blue); }
 .focus-content { padding: 64px 16px 28px; }
+.focus-content.bare { padding: 0; }
 @media (max-width: 768px) { .focus-content { padding: 16px 10px; } }
 
 /* ============ 登录页 · 深色 HUD 主视觉（钢甲反应堆质感） ============ */
