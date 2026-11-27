@@ -342,6 +342,12 @@ def create_wo(body: WOIn, db: Session = Depends(get_db)):
     stations = merge_flow_stations(flows) if flows else [str(item or "").strip() for item in (body.stations or []) if str(item or "").strip()]
     if not stations:
         raise HTTPException(400, "请选择至少一条流程")
+    # 产品必须已有档案：产品↔站点的关联写在产品档案里，无档案则关联无处落地。
+    from . import product_profiles_store
+    product_code = relation_store.resolve_relation_code("product", body.productCode or body.product, db)
+    profile_codes = {str(item.get("code") or "").strip().upper() for item in product_profiles_store.list_profiles()}
+    if product_code.strip().upper() not in profile_codes:
+        raise HTTPException(400, f"产品 {body.product} 还没有产品档案，请先在「产品资料」创建档案后再建单")
     wo = models.WorkOrder(
         wo_no=wo_no, product=body.product, batch=body.batch,
         plan_qty=0, location=body.location or "戴盟公司",
@@ -350,7 +356,8 @@ def create_wo(body: WOIn, db: Session = Depends(get_db)):
     )
     db.add(wo); db.commit(); db.refresh(wo)
     desired = {
-        "relatedProducts": [{"code": relation_store.resolve_relation_code("product", body.product, db)}],
+        # 产品按编码精确关联（同名产品存在时不会挂错对象）
+        "relatedProducts": [{"code": product_code}],
         "relatedStations": [{"code": relation_store.resolve_relation_code("station", value, db)} for value in stations],
         "relatedEquipment": body.relatedEquipment,
         "relatedPersons": body.relatedPersons,
@@ -612,13 +619,18 @@ def rework(wo_id: int, sn: str, db: Session = Depends(get_db)):
         raise HTTPException(404, "SN 不存在")
     u.state = "rework"
     u.fail_code = None
+    # 返修回到"当初判定不良的那个站"重测：fail 时当前站已被改写成维修站，
+    # 这里从过站记录里取回失败站，否则返修后 SN 会一直停在维修站、过不了原站。
+    failed_station = next((r.station for r in reversed(u.records) if r.result == "fail" and r.station), "")
+    back_station = failed_station or u.current_station or ""
+    u.current_station = back_station
     db.add(models.StationRecord(
-        unit_id=u.id, station=u.current_station or "", result="rework",
+        unit_id=u.id, station=back_station, result="rework",
         operator="system", source_type="station",
     ))
-    write_audit(db, "system", "rework", sn, f"wo_id={wo_id}; station={u.current_station or ''}")
+    write_audit(db, "system", "rework", sn, f"wo_id={wo_id}; station={back_station}")
     db.commit()
-    return {"ok": True, "state": u.state, "msg": "已回到当前站重测"}
+    return {"ok": True, "state": u.state, "currentStation": back_station, "msg": f"已回到 {back_station} 站重测"}
 
 
 # ---- 包装出库 ----

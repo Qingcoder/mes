@@ -11,9 +11,12 @@
         </div>
         <div class="field"><label>产品</label>
           <div class="row">
-            <select v-model="form.product" style="flex:1"><option v-for="p in products" :key="p.code" :value="p.name">{{ p.name }}</option></select>
+            <select v-model="form.productCode" style="flex:1" :disabled="!profileProducts.length">
+              <option v-for="p in profileProducts" :key="p.code" :value="p.code">{{ p.name }}（{{ p.code }}）</option>
+            </select>
             <router-link v-if="hasProductProfile" class="btn" :to="{ path: '/product-info', query: { product: form.product } }">资料</router-link>
           </div>
+          <p v-if="!profileProducts.length" class="mini">还没有带产品档案的产品，请先到「产品资料」创建档案后再建单（建单后产品要关联站点）。</p>
         </div>
         <div class="field"><label>批次</label><input v-model="form.batch" placeholder="第一批" /></div>
         <div class="field">
@@ -114,6 +117,8 @@ const route = useRoute()
 
 const products = ref<any[]>([])
 const productProfiles = ref<any[]>([])
+// 只有带档案的产品才能建单：产品↔站点的关联写在产品档案里
+const profileProducts = computed(() => productProfiles.value.filter((p: any) => p.hasProfile !== false))
 const wos = ref<any[]>([])
 const detail = ref<any>(null)
 const msg = ref(''); const msgOk = ref(true)
@@ -122,7 +127,7 @@ const configuredFlows = ref<FlowOption[]>([])
 const selectedFlowKeys = ref<string[]>([])
 const selectedFlows = ref<WoFlowSelection[]>([])
 const selectedStations = ref<string[]>([])
-const form = ref({ wo_no: '', product: '', batch: '', plan_qty: 0, pack_qty: 1, location: '戴盟公司', relatedEquipment: [] as string[], relatedPersons: [] as string[] })
+const form = ref({ wo_no: '', product: '', productCode: '', batch: '', plan_qty: 0, pack_qty: 1, location: '戴盟公司', relatedEquipment: [] as string[], relatedPersons: [] as string[] })
 const relationOptions = reactive<any>({ equipment: [], persons: [] })
 const woNoLoading = ref(false)
 let woNoTimer: ReturnType<typeof setTimeout> | null = null
@@ -143,6 +148,11 @@ const hasProductProfile = computed(() => {
   const value = form.value.product
   return productProfiles.value.some(p => [p.code, p.name, p.family].includes(value))
 })
+/** 产品编码 → 名称（工单上记名称，关联按编码）。 */
+function syncProductName() {
+  const hit = profileProducts.value.find(p => p.code === form.value.productCode)
+  if (hit) form.value.product = hit.name
+}
 const historyFlows = computed<FlowOption[]>(() => {
   const seen = new Set<string>()
   const result: FlowOption[] = []
@@ -187,8 +197,9 @@ async function refreshWoNo() {
 }
 
 watch(
-  [() => form.value.product, () => selectedStations.value.join('|')],
+  [() => form.value.productCode, () => selectedStations.value.join('|')],
   () => {
+    syncProductName()
     if (woNoTimer) clearTimeout(woNoTimer)
     woNoTimer = setTimeout(() => void refreshWoNo(), 200)
   },
@@ -235,9 +246,10 @@ function checkSns(values: string[]): string[] | null {
 }
 
 async function load() {
-  products.value = await api.products()
   try { productProfiles.value = await api.productProfiles() } catch { productProfiles.value = [] }
-  if (products.value.length && !form.value.product) form.value.product = products.value[0].name
+  // 产品用编码选中、名称展示：同名产品也能区分开
+  if (profileProducts.value.length && !form.value.productCode) form.value.productCode = profileProducts.value[0].code
+  syncProductName()
   wos.value = await api.listWO()
   try {
     const data: any = await api.relationOptions()

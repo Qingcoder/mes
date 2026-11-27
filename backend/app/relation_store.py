@@ -204,12 +204,20 @@ def apply_full_selection(kind: str, code: Any, desired: Dict[str, Any], db) -> i
 
 
 def resolve_relation_code(kind: str, value: Any, db) -> str:
-    """把产品/站点名称解析成统一关系编码。"""
+    """把产品/站点名称解析成统一关系编码。
+
+    先按 code 精确匹配，再按 name 匹配：同名产品存在时（如两个产品都叫
+    "V2.9 无本体数采背包"），只有先比 code 才不会关联到错对象。
+    """
     raw = str(value or "").strip()
     if not raw:
         return ""
-    for item in options(db).get({"product": "products", "station": "stations", "equipment": "equipment", "person": "persons"}.get(kind, ""), []):
-        if raw.lower() in {str(item.get("code") or "").lower(), str(item.get("name") or "").lower()}:
+    items = options(db).get({"product": "products", "station": "stations", "equipment": "equipment", "person": "persons"}.get(kind, ""), [])
+    for item in items:
+        if raw.lower() == str(item.get("code") or "").lower():
+            return str(item.get("code") or "")
+    for item in items:
+        if raw.lower() == str(item.get("name") or "").lower():
             return str(item.get("code") or "")
     return raw
 

@@ -21,6 +21,7 @@ class LoginOut(BaseModel):
 class WOIn(BaseModel):
     wo_no: str = ""
     product: str
+    productCode: Optional[str] = None   # 产品编码；同名产品时按编码精确关联
     batch: Optional[str] = None
     plan_qty: int = 0
     location: Optional[str] = "戴盟公司"
