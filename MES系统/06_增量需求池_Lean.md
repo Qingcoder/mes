@@ -176,6 +176,20 @@
 
 ---
 
+## R-19 | WO.FLOW-COMBO | P1 | DONE
+
+- 需求：工单支持**组合多条产品流程**（原为单选一条流程）。
+- 语义：勾选 N 条流程 → 按右侧顺序合并站点序列（顺序拼接，重复站点保留首次出现）→ 作为该工单的过站序列；工单同时记录组合明细（各流程的 key/名称/站点）。
+- 实现：
+  - 后端 `models.WorkOrder` 新增 `flows` JSON 列；`main.py` 加 `_migrate_wo_flows_column`（幂等 ALTER TABLE + 旧行补 '[]'，因 create_all 不给旧表加列）、`merge_flow_stations`、`normalize_flows`；`POST /api/wos` 传 `flows` 时由后端派生 `stations`，不传则保持老单流程行为；空流程直接 400。
+  - 前端新增 `components/WoFlowCombo.vue`（勾选 + 上移/下移 + 合并预览 + 重复站点提示）、`types/flow.ts`；`views/WO.vue` 改为组合选择器，工单列表显示"组合 N 条流程"。
+- 兼容：老工单 `flows` 为空数组，站点序列仍是过站校验唯一依据，过站/装箱/查询逻辑零改动；前端同时提交 `stations` 与 `flows`，旧后端也能正常建单。
+- 验收：隔离环境（8017 + 复制库）HTTP 自测 18/18 PASS —— 旧库自动补列、旧工单 flows 为空、单流程建单、组合建单合并序列正确、组合明细回显、空流程 400、详情回显、人员 scope、设备筛选、环境域 stations 键。
+- 边界：目前是"一单一套站点序列"。若要"一单多产品各自走不同流程"（SN 按产品分轨），需另设计 SN 的产品归属与分轨过站，尚未实现。
+- 来源：D11-27
+
+---
+
 ## 待确认（ASK）
 
 - A1 服务是否配开机自启？用户曾问未答。（R-09）

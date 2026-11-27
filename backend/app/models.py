@@ -38,6 +38,7 @@ class WorkOrder(Base):
     plan_qty = Column(Integer, default=0)
     location = Column(String(64), default="戴盟公司")
     stations = Column(JSON, default=list)     # 每工单可配的站点序列 ["压力测试",...]
+    flows = Column(JSON, default=list)       # 组合的流程明细 [{key,name,stations}]，stations 为合并后的最终序列
     pack_qty = Column(Integer, default=1)     # 自定义配比 N 台/箱
     status = Column(String(32), default="draft")  # draft/released/running/finished/closed
     rev = Column(Integer, default=0, nullable=False)  # 乐观锁版本号

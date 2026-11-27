@@ -3,7 +3,7 @@
     <div class="grid g2">
       <div class="card">
         <h2>新建工单</h2>
-        <p class="sub">建单时只确定站点序列；计划数按实际导入 SN 自动计算，装箱按包装工站实际数量完成。</p>
+        <p class="sub">可勾选多条流程组合成一条过站序列；计划数按实际导入 SN 自动计算，装箱按包装工站实际数量完成。</p>
         <div class="field">
           <label>工单号（自动生成）</label>
           <input v-model="form.wo_no" class="mono" readonly placeholder="填写产品和流程后自动生成" />
@@ -17,20 +17,12 @@
         </div>
         <div class="field"><label>批次</label><input v-model="form.batch" placeholder="第一批" /></div>
         <div class="field">
-          <label>流程（按过站顺序）</label>
-          <select v-model="selectedFlowKey" :disabled="!flowOptions.length" @change="applyFlow">
-            <option value="">{{ flowOptions.length ? '请选择已配置流程' : '暂无已配置流程' }}</option>
-            <optgroup v-if="configFlowOptions.length" label="工艺流程">
-              <option v-for="flow in configFlowOptions" :key="flow.key" :value="flow.key">{{ flow.label }}</option>
-            </optgroup>
-            <optgroup v-if="historyFlowOptions.length" label="历史工单流程">
-              <option v-for="flow in historyFlowOptions" :key="flow.key" :value="flow.key">{{ flow.label }}</option>
-            </optgroup>
-          </select>
-          <div v-if="selectedStations.length" class="flow-preview">
-            <span v-for="(station, index) in selectedStations" :key="station + index"><b>{{ index + 1 }}</b>{{ station }}</span>
-          </div>
-          <p v-else class="mini">请先在工艺管理中配好站点流程，或选择历史工单已用流程。</p>
+          <WoFlowCombo
+            v-model="selectedFlowKeys"
+            v-model:stations="selectedStations"
+            v-model:flows="selectedFlows"
+            :options="flowOptions"
+          />
         </div>
         <div class="field"><label>产出地点</label><select v-model="form.location"><option>戴盟公司</option><option>联想智造</option></select></div>
         <div class="grid2">
@@ -77,7 +69,12 @@
         <tbody>
           <tr v-for="w in filteredWos" :key="w.id">
             <td class="mono">{{ w.wo_no }}</td><td>{{ w.product }}</td><td>{{ w.batch }}</td>
-            <td>{{ w.plan_qty }}</td><td>{{ (w.stations || []).join(' → ') }}</td><td>{{ w.pack_qty }}</td>
+            <td>{{ w.plan_qty }}</td>
+            <td>
+              <div>{{ (w.stations || []).join(' → ') }}</div>
+              <div v-if="(w.flows || []).length > 1" class="mini">组合 {{ w.flows.length }} 条流程</div>
+            </td>
+            <td>{{ w.pack_qty }}</td>
             <td><span :class="['tag', w.status]">{{ w.status }}</span></td>
             <td><button class="btn" @click="viewWO(w.id)">查看 SN</button></td>
           </tr>
@@ -109,11 +106,11 @@
 import { computed, reactive, ref, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { api } from '../api'
+import WoFlowCombo from '../components/WoFlowCombo.vue'
+import type { FlowOption, WoFlowSelection } from '../types/flow'
 import { dedupe, downloadSnTemplate, normalizeSns, parseSnFile, validateSns } from '../utils/import'
 
 const route = useRoute()
-
-type FlowOption = { key: string; label: string; stations: string[]; source: 'config' | 'history' }
 
 const products = ref<any[]>([])
 const productProfiles = ref<any[]>([])
@@ -121,7 +118,9 @@ const wos = ref<any[]>([])
 const detail = ref<any>(null)
 const msg = ref(''); const msgOk = ref(true)
 const configuredFlows = ref<FlowOption[]>([])
-const selectedFlowKey = ref('')
+// 已选流程 key（顺序即组合顺序）与合并后的站点序列
+const selectedFlowKeys = ref<string[]>([])
+const selectedFlows = ref<WoFlowSelection[]>([])
 const selectedStations = ref<string[]>([])
 const form = ref({ wo_no: '', product: '', batch: '', plan_qty: 0, pack_qty: 1, location: '戴盟公司', relatedEquipment: [] as string[], relatedPersons: [] as string[] })
 const relationOptions = reactive<any>({ equipment: [], persons: [] })
@@ -153,7 +152,8 @@ const historyFlows = computed<FlowOption[]>(() => {
     const signature = stations.join('|')
     if (seen.has(signature)) return
     seen.add(signature)
-    result.push({ key: `history:${wo.id ?? index}`, label: stations.join(' → '), stations, source: 'history' })
+    const name = `历史流程 ${wo.wo_no || index + 1}`
+    result.push({ key: `history:${wo.id ?? index}`, label: `${name}：${stations.join(' → ')}`, name, stations, source: 'history' })
   })
   return result
 })
@@ -166,8 +166,6 @@ const flowOptions = computed<FlowOption[]>(() => {
     return true
   })
 })
-const configFlowOptions = computed(() => flowOptions.value.filter(flow => flow.source === 'config'))
-const historyFlowOptions = computed(() => flowOptions.value.filter(flow => flow.source === 'history'))
 const woNoReady = computed(() => !!form.value.product && selectedStations.value.length > 0)
 
 async function refreshWoNo() {
@@ -189,7 +187,7 @@ async function refreshWoNo() {
 }
 
 watch(
-  [() => form.value.product, () => selectedFlowKey.value],
+  [() => form.value.product, () => selectedStations.value.join('|')],
   () => {
     if (woNoTimer) clearTimeout(woNoTimer)
     woNoTimer = setTimeout(() => void refreshWoNo(), 200)
@@ -201,19 +199,17 @@ onUnmounted(() => {
   if (woNoTimer) clearTimeout(woNoTimer)
 })
 
-function applyFlow() {
-  const flow = flowOptions.value.find(item => item.key === selectedFlowKey.value)
-  selectedStations.value = flow ? [...flow.stations] : []
-}
 async function loadConfiguredFlows() {
   try {
     const data: any = await api.woFlowOptions()
     configuredFlows.value = (data.templates || [])
       .map((item: any) => {
         const stations = (item.stations || []).map((station: any) => String(station || '').trim()).filter(Boolean)
+        const name = String(item.name || '工艺流程')
         return {
           key: String(item.key || `config:${item.name || ''}`),
-          label: `${item.name || '工艺流程'}：${stations.join(' → ')}`,
+          label: `${name}：${stations.join(' → ')}`,
+          name,
           stations,
           source: 'config' as const,
         }
@@ -249,9 +245,13 @@ async function load() {
     relationOptions.persons = data.persons || []
   } catch { /* 关联选项加载失败不阻塞建单 */ }
   await loadConfiguredFlows()
-  if (selectedFlowKey.value && !flowOptions.value.some(flow => flow.key === selectedFlowKey.value)) {
-    selectedFlowKey.value = ''
+  // 流程选项刷新后，已选 key 若已失效则清空选择，避免残留脏组合。
+  const validKeys = new Set(flowOptions.value.map(flow => flow.key))
+  const kept = selectedFlowKeys.value.filter(key => validKeys.has(key))
+  if (kept.length !== selectedFlowKeys.value.length) {
+    selectedFlowKeys.value = kept
     selectedStations.value = []
+    selectedFlows.value = []
   }
 }
 onMounted(async () => {
@@ -261,14 +261,19 @@ onMounted(async () => {
 })
 
 async function create() {
-  if (!selectedStations.value.length) { notify('请选择已配置流程', false); return }
+  if (!selectedStations.value.length) { notify('请至少勾选一条流程', false); return }
   try {
-    const created: any = await api.createWO({ ...form.value, stations: selectedStations.value })
+    const created: any = await api.createWO({
+      ...form.value,
+      stations: selectedStations.value,
+      flows: selectedFlows.value,
+    })
     notify(`工单创建成功：${created.wo_no || form.value.wo_no}`)
     form.value.wo_no = ''
     form.value.relatedEquipment = []
     form.value.relatedPersons = []
-    selectedFlowKey.value = ''
+    selectedFlowKeys.value = []
+    selectedFlows.value = []
     selectedStations.value = []
     await load()
   } catch (e: any) { notify(e.message, false) }

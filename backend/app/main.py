@@ -151,8 +151,52 @@ def _migrate_sn_replace_columns(db: Session) -> None:
     db.commit()
 
 
+def _migrate_wo_flows_column(db: Session) -> None:
+    """幂等补齐工单流程组合列（create_all 不会给已有表加列）。"""
+    from sqlalchemy import text
+    columns = {row[1] for row in db.execute(text("PRAGMA table_info(wos)")).fetchall()}
+    if "flows" not in columns:
+        db.execute(text("ALTER TABLE wos ADD COLUMN flows JSON"))
+    db.execute(text("UPDATE wos SET flows = '[]' WHERE flows IS NULL"))
+    db.commit()
+
+
+def merge_flow_stations(flows: List[Any]) -> List[str]:
+    """把多条流程的站点序列按给定顺序合并：顺序拼接，重复站点保留首次出现。"""
+    merged: List[str] = []
+    seen = set()
+    for flow in flows or []:
+        stations = flow.get("stations") if isinstance(flow, dict) else flow
+        for raw in stations or []:
+            name = str(raw or "").strip()
+            if not name or name in seen:
+                continue
+            seen.add(name)
+            merged.append(name)
+    return merged
+
+
+def normalize_flows(flows: List[Any]) -> List[Dict[str, Any]]:
+    """规整流程组合明细：只保留 key/name/stations 三项，避免脏数据进库。"""
+    result: List[Dict[str, Any]] = []
+    for flow in flows or []:
+        if not isinstance(flow, dict):
+            continue
+        stations = [str(item or "").strip() for item in (flow.get("stations") or [])]
+        stations = [item for item in stations if item]
+        if not stations:
+            continue
+        result.append({
+            "key": str(flow.get("key") or "").strip(),
+            "name": str(flow.get("name") or "").strip(),
+            "stations": stations,
+        })
+    return result
+
+
 def seed(db: Session):
     _migrate_sn_replace_columns(db)
+    _migrate_wo_flows_column(db)
     ensure_default_permissions(db)
     if db.query(models.Account).count() == 0:
         db.add(models.Account(username="admin", password="123456", name="系统管理员", role="admin"))
@@ -293,16 +337,21 @@ def relation_options(db: Session = Depends(get_db)):
 @app.post("/api/wos", response_model=WOLine, dependencies=[Depends(require_auth)])
 def create_wo(body: WOIn, db: Session = Depends(get_db)):
     wo_no = _next_wo_no(db)
+    # 流程组合：多选流程 → 按选择顺序合并站点序列；未传 flows 时保持单流程老行为。
+    flows = normalize_flows(body.flows)
+    stations = merge_flow_stations(flows) if flows else [str(item or "").strip() for item in (body.stations or []) if str(item or "").strip()]
+    if not stations:
+        raise HTTPException(400, "请选择至少一条流程")
     wo = models.WorkOrder(
         wo_no=wo_no, product=body.product, batch=body.batch,
         plan_qty=0, location=body.location or "戴盟公司",
-        stations=body.stations, pack_qty=body.pack_qty or 1,
+        stations=stations, flows=flows, pack_qty=body.pack_qty or 1,
         status="released", rev=0,
     )
     db.add(wo); db.commit(); db.refresh(wo)
     desired = {
         "relatedProducts": [{"code": relation_store.resolve_relation_code("product", body.product, db)}],
-        "relatedStations": [{"code": relation_store.resolve_relation_code("station", value, db)} for value in body.stations],
+        "relatedStations": [{"code": relation_store.resolve_relation_code("station", value, db)} for value in stations],
         "relatedEquipment": body.relatedEquipment,
         "relatedPersons": body.relatedPersons,
     }

@@ -25,6 +25,7 @@ class WOIn(BaseModel):
     plan_qty: int = 0
     location: Optional[str] = "戴盟公司"
     stations: List[str] = []
+    flows: List[Any] = []       # 组合的流程明细；传入后 stations 由后端按顺序合并派生
     pack_qty: int = 1
     relatedEquipment: List[Any] = []
     relatedPersons: List[Any] = []
@@ -67,6 +68,7 @@ class WOLine(BaseModel):
     plan_qty: int
     location: Optional[str] = None
     stations: List[str] = []
+    flows: List[dict] = []      # 组合的流程明细；空数组表示单流程老数据
     pack_qty: int = 1
     relatedProducts: List[dict] = []
     relatedEquipment: List[dict] = []
