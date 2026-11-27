@@ -84,7 +84,16 @@ body {
 .brand small { font-size: 12px; color: rgba(255,255,255,.45); }
 .nav { padding: 14px 10px; flex: 1; overflow-y: auto; }
 .nav-group { margin-bottom: 10px; }
-.nav-group-title { padding: 6px 14px 4px; font-size: 11px; letter-spacing: .12em; color: rgba(255,255,255,.38); text-transform: uppercase; }
+.nav-group-title {
+  width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 7px 14px 5px; margin: 0 0 2px; border: 0; background: transparent; cursor: pointer;
+  font-size: 11px; letter-spacing: .12em; color: rgba(255,255,255,.42); text-transform: uppercase;
+  font-family: inherit;
+}
+.nav-group-title:hover { color: rgba(255,255,255,.75); }
+.nav-group-arrow { display: inline-block; font-size: 14px; transition: transform .15s; }
+.nav-group-arrow.rotated { transform: rotate(90deg); }
+.nav-group-items { display: grid; gap: 2px; }
 /* 菜单结构：没有从属关系的平铺；有父子关系的挂成可展开的树 */
 .nav-node { margin-bottom: 3px; }
 .nav-row { display: flex; align-items: stretch; gap: 2px; }
@@ -554,8 +563,9 @@ body { -webkit-tap-highlight-color: transparent; }
   .brand, .side-foot { display: none; }
   .nav { display: flex; gap: 2px; padding: 5px 4px; width: 100%; overflow: visible; }
   .nav-group { display: contents; }
+  /* 手机端底部 Tab 放不下分组与树：隐藏组标题、组内平铺，子项靠页面顶部快捷条进入 */
   .nav-group-title { display: none; }
-  /* 手机端底部 Tab 放不下树：只留顶层项，子项通过页面顶部的快捷条进入 */
+  .nav-group-items { display: contents !important; }
   .nav-node { display: contents; }
   .nav-toggle { display: none; }
   .nav-children { display: none; }

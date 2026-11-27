@@ -39,7 +39,7 @@ export interface AppRouteConfig {
   permission?: string
   public?: boolean
   menu?: boolean
-  /** 菜单分组：菜单已改为「平铺 + 父子树」，此字段仅作旧数据保留，不再渲染标题 */
+  /** 所属导航分组 key（见 NAV_GROUPS）；菜单项必须归属一个已定义的分组 */
   group?: string
   /** 父级菜单路由 path：挂到父项下形成树；没有真实从属关系的菜单项一律平铺 */
   parent?: string
@@ -54,6 +54,25 @@ export interface AppRouteConfig {
   hideIcon?: boolean
   description?: string
 }
+
+/** 导航分组定义：顺序、默认展开状态、可见性权限要求。 */
+export interface NavGroupConfig {
+  key: string
+  label: string
+  /** 分组顺序，数字小的在前 */
+  order: number
+  /** 默认折叠；用户手动切换后的状态会覆盖它并被记住 */
+  collapsed?: boolean
+  /** 可见性要求：用户至少要有一个以此为前缀的权限码，否则整组不显示 */
+  requirePermPrefix?: string
+}
+
+// 导航分组（唯一数据源）：现场作业 → 生产主管 → 配置中心
+export const NAV_GROUPS: NavGroupConfig[] = [
+  { key: 'ops', label: '现场作业', order: 1 },
+  { key: 'supervisor', label: '生产主管', order: 2 },
+  { key: 'config', label: '配置中心', order: 3, collapsed: true, requirePermPrefix: 'system:' },
+]
 
 // 站点作业配置作为 /station 路由的一部分，不携带任何操作人角色字段。
 export const STATION_ROUTE_CONFIG: StationRouteConfig = {
@@ -76,25 +95,25 @@ export const APP_ROUTES: AppRouteConfig[] = [
   { path: '/', name: 'root', component: HomeRedirect, public: true },
   { path: '/entry', name: 'entry', redirect: '/login', public: true },
   { path: '/create-role', name: 'createRole', component: RoleCreateView, permission: 'system:role:manage', menu: false },
-  { path: '/product-info', name: 'productInfo', component: ProductInfo, label: '产品资料', icon: 'material', permission: 'wo:view', menu: true, parent: '/material', order: 11, view: 'shared', backup: true },
-  { path: '/sn-library', name: 'snLibrary', component: SnLibrary, label: 'SN 库', icon: 'sn', permission: 'wo:view', menu: true, parent: '/material', order: 12, view: 'shared', backup: true },
+  { path: '/product-info', name: 'productInfo', component: ProductInfo, label: '产品资料', icon: 'material', permission: 'wo:view', menu: true, group: 'config', parent: '/material', order: 11, view: 'shared', backup: true },
+  { path: '/sn-library', name: 'snLibrary', component: SnLibrary, label: 'SN 库', icon: 'sn', permission: 'wo:view', menu: true, group: 'config', parent: '/material', order: 12, view: 'shared', backup: true },
   { path: '/login', name: 'login', component: Login, public: true },
   { path: '/method/station/:code', name: 'methodStation', component: StationDetail, permission: 'method:manage', menu: false },
   { path: '/scan-approve', name: 'scanApprove', component: ScanApprove, public: true },
-  { path: '/wo', name: 'wo', component: WO, label: '工单管理', icon: 'wo', permission: 'wo:view', menu: true, group: '工艺品质', order: 10, view: 'shared', backup: true },
-  { path: '/station', name: 'station', component: Station, label: '站点作业', icon: 'station', permission: 'station:op', menu: true, group: '现场作业', order: 30, station: STATION_ROUTE_CONFIG, focus: true, view: 'shared', backup: true },
-  { path: '/sn-detail', name: 'snDetail', component: SnDetail, label: 'SN 详情', permission: 'station:op', menu: false, group: '现场作业', focus: true, view: 'shared', backup: true },
-  { path: '/access-control', name: 'accessControl', component: AccessManage, label: '站点流程权限', icon: 'access', permission: 'system:access:manage', menu: true, parent: '/method', order: 21, view: 'shared', backup: true },
-  { path: '/site-manage', name: 'siteManage', component: SiteManage, label: '自定义站点', icon: 'site', permission: 'system:access:manage', menu: true, parent: '/method', order: 20, view: 'shared', backup: true },
-  { path: '/pack', name: 'pack', component: Pack, label: '包装管理', icon: 'pack', permission: 'pack:op', menu: true, group: '现场作业', order: 31, view: 'shared', backup: true },
-  { path: '/query', name: 'query', component: Query, label: '数据追溯', icon: 'query', permission: 'query:view', menu: true, group: '现场作业', order: 32, view: 'shared', backup: true },
-  { path: '/roles', name: 'roles', component: RoleManage, label: '权限管理', icon: 'role', permission: 'system:role:manage', menu: true, order: 40, view: 'shared', backup: true },
-  { path: fixedDashboard.route, name: fixedDashboard.key, component: QualityDashboard, label: fixedDashboard.label, icon: fixedDashboard.icon || '•', permission: fixedDashboard.permission, menu: true, group: '生产主管', order: 1, view: 'shared', backup: true, fixed: true, hideIcon: !fixedDashboard.icon, description: fixedDashboard.description },
-  { path: fixedPerson.route, name: fixedPerson.key, component: PersonManage, label: fixedPerson.label, icon: fixedPerson.icon || '•', permission: fixedPerson.permission, menu: true, group: '人机料法环', order: 2, view: 'shared', backup: true, fixed: true, hideIcon: !fixedPerson.icon, description: fixedPerson.description },
-  { path: fixedMachine.route, name: fixedMachine.key, component: DomainModuleView, label: fixedMachine.label, icon: fixedMachine.icon || '•', permission: fixedMachine.permission, menu: true, group: '人机料法环', order: 3, view: 'shared', backup: true, fixed: true, hideIcon: !fixedMachine.icon, description: fixedMachine.description },
-  { path: fixedMaterial.route, name: fixedMaterial.key, component: DomainModuleView, label: fixedMaterial.label, icon: fixedMaterial.icon || '•', permission: fixedMaterial.permission, menu: true, group: '人机料法环', order: 4, view: 'shared', backup: true, fixed: true, hideIcon: !fixedMaterial.icon, description: fixedMaterial.description },
-  { path: fixedMethod.route, name: fixedMethod.key, component: MethodDesign, label: fixedMethod.label, icon: fixedMethod.icon || '•', permission: fixedMethod.permission, menu: true, group: '人机料法环', order: 5, view: 'shared', backup: true, fixed: true, hideIcon: !fixedMethod.icon, description: fixedMethod.description },
-  { path: fixedEnvironment.route, name: fixedEnvironment.key, component: DomainModuleView, label: fixedEnvironment.label, icon: fixedEnvironment.icon || '•', permission: fixedEnvironment.permission, menu: true, group: '人机料法环', order: 6, view: 'shared', backup: true, fixed: true, hideIcon: !fixedEnvironment.icon, description: fixedEnvironment.description },
+  { path: '/wo', name: 'wo', component: WO, label: '工单管理', icon: 'wo', permission: 'wo:view', menu: true, group: 'supervisor', order: 10, view: 'shared', backup: true },
+  { path: '/station', name: 'station', component: Station, label: '站点作业', icon: 'station', permission: 'station:op', menu: true, group: 'ops', order: 30, station: STATION_ROUTE_CONFIG, focus: true, view: 'shared', backup: true },
+  { path: '/sn-detail', name: 'snDetail', component: SnDetail, label: 'SN 详情', permission: 'station:op', menu: false, group: 'ops', focus: true, view: 'shared', backup: true },
+  { path: '/access-control', name: 'accessControl', component: AccessManage, label: '站点流程权限', icon: 'access', permission: 'system:access:manage', menu: true, group: 'config', parent: '/method', order: 21, view: 'shared', backup: true },
+  { path: '/site-manage', name: 'siteManage', component: SiteManage, label: '自定义站点', icon: 'site', permission: 'system:access:manage', menu: true, group: 'config', parent: '/method', order: 20, view: 'shared', backup: true },
+  { path: '/pack', name: 'pack', component: Pack, label: '包装管理', icon: 'pack', permission: 'pack:op', menu: true, group: 'ops', order: 31, view: 'shared', backup: true },
+  { path: '/query', name: 'query', component: Query, label: '数据追溯', icon: 'query', permission: 'query:view', menu: true, group: 'ops', order: 32, view: 'shared', backup: true },
+  { path: '/roles', name: 'roles', component: RoleManage, label: '权限管理', icon: 'role', permission: 'system:role:manage', menu: true, group: 'config', order: 40, view: 'shared', backup: true },
+  { path: fixedDashboard.route, name: fixedDashboard.key, component: QualityDashboard, label: fixedDashboard.label, icon: fixedDashboard.icon || '•', permission: fixedDashboard.permission, menu: true, group: 'supervisor', order: 1, view: 'shared', backup: true, fixed: true, hideIcon: !fixedDashboard.icon, description: fixedDashboard.description },
+  { path: fixedPerson.route, name: fixedPerson.key, component: PersonManage, label: fixedPerson.label, icon: fixedPerson.icon || '•', permission: fixedPerson.permission, menu: true, group: 'config', order: 2, view: 'shared', backup: true, fixed: true, hideIcon: !fixedPerson.icon, description: fixedPerson.description },
+  { path: fixedMachine.route, name: fixedMachine.key, component: DomainModuleView, label: fixedMachine.label, icon: fixedMachine.icon || '•', permission: fixedMachine.permission, menu: true, group: 'config', order: 3, view: 'shared', backup: true, fixed: true, hideIcon: !fixedMachine.icon, description: fixedMachine.description },
+  { path: fixedMaterial.route, name: fixedMaterial.key, component: DomainModuleView, label: fixedMaterial.label, icon: fixedMaterial.icon || '•', permission: fixedMaterial.permission, menu: true, group: 'config', order: 4, view: 'shared', backup: true, fixed: true, hideIcon: !fixedMaterial.icon, description: fixedMaterial.description },
+  { path: fixedMethod.route, name: fixedMethod.key, component: MethodDesign, label: fixedMethod.label, icon: fixedMethod.icon || '•', permission: fixedMethod.permission, menu: true, group: 'config', order: 5, view: 'shared', backup: true, fixed: true, hideIcon: !fixedMethod.icon, description: fixedMethod.description },
+  { path: fixedEnvironment.route, name: fixedEnvironment.key, component: DomainModuleView, label: fixedEnvironment.label, icon: fixedEnvironment.icon || '•', permission: fixedEnvironment.permission, menu: true, group: 'config', order: 6, view: 'shared', backup: true, fixed: true, hideIcon: !fixedEnvironment.icon, description: fixedEnvironment.description },
 ]
 
 export const MENU_ROUTES = APP_ROUTES.filter(r => r.menu)
@@ -175,7 +194,9 @@ export function validateRouteConfig(): void {
       if (!r.icon) errors.push(`${r.path} 是菜单项，但未配置 icon`)
       if (!r.permission) errors.push(`${r.path} 是菜单项，但未配置 permission`)
       if (typeof r.order !== 'number') errors.push(`${r.path} 是菜单项，但未配置 order`)
-      // group 不再是必需项：菜单已改为「无分组平铺 + 父子树」，靠 parent 表达层级
+      // 菜单项必须归属一个已定义的导航分组：分组写错会静默丢菜单，必须在启动时报出来
+      if (!r.group) errors.push(`${r.path} 是菜单项，但未配置 group`)
+      else if (!NAV_GROUPS.some(g => g.key === r.group)) errors.push(`${r.path} 的 group 未定义：${r.group}`)
     }
     if (r.parent) {
       if (r.parent === r.path) errors.push(`${r.path} 不能把自己设为 parent`)

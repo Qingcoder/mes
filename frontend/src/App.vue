@@ -62,26 +62,39 @@
         <small class="version-mark">生产管理平台 V1.0</small>
       </div>
       <nav class="nav">
-        <div v-for="node in menuTree" :key="node.path" class="nav-node">
-          <div class="nav-row" :class="{ expanded: isExpanded(node.path) }">
-            <router-link class="nav-item" :class="{ parent: node.children.length }" :to="node.path" active-class="active" :title="node.label">
-              <AppIcon v-if="node.icon && !node.hideIcon" :name="node.icon" :size="18" :label="node.label" decorative /><span>{{ node.label }}</span>
-            </router-link>
-            <button
-              v-if="node.children.length"
-              class="nav-toggle"
-              type="button"
-              :aria-expanded="isExpanded(node.path)"
-              :aria-label="(isExpanded(node.path) ? '收起 ' : '展开 ') + node.label"
-              @click.prevent="toggleNode(node.path)"
-            >
-              <span :class="{ rotated: isExpanded(node.path) }">›</span>
-            </button>
-          </div>
-          <div v-if="node.children.length && isExpanded(node.path)" class="nav-children">
-            <router-link v-for="child in node.children" :key="child.path" class="nav-item child" :to="child.path" active-class="active" :title="child.label">
-              <AppIcon v-if="child.icon && !child.hideIcon" :name="child.icon" :size="16" :label="child.label" decorative /><span>{{ child.label }}</span>
-            </router-link>
+        <div v-for="group in navGroups" :key="group.key" class="nav-group">
+          <button
+            class="nav-group-title"
+            type="button"
+            :aria-expanded="isGroupExpanded(group.key)"
+            @click="toggleGroup(group.key)"
+          >
+            <span>{{ group.label }}</span>
+            <span class="nav-group-arrow" :class="{ rotated: isGroupExpanded(group.key) }">›</span>
+          </button>
+          <div v-show="isGroupExpanded(group.key)" class="nav-group-items">
+            <div v-for="node in group.items" :key="node.path" class="nav-node">
+              <div class="nav-row" :class="{ expanded: isExpanded(node.path) }">
+                <router-link class="nav-item" :class="{ parent: node.children.length }" :to="node.path" active-class="active" :title="node.label">
+                  <AppIcon v-if="node.icon && !node.hideIcon" :name="node.icon" :size="18" :label="node.label" decorative /><span>{{ node.label }}</span>
+                </router-link>
+                <button
+                  v-if="node.children.length"
+                  class="nav-toggle"
+                  type="button"
+                  :aria-expanded="isExpanded(node.path)"
+                  :aria-label="(isExpanded(node.path) ? '收起 ' : '展开 ') + node.label"
+                  @click.prevent="toggleNode(node.path)"
+                >
+                  <span :class="{ rotated: isExpanded(node.path) }">›</span>
+                </button>
+              </div>
+              <div v-if="node.children.length && isExpanded(node.path)" class="nav-children">
+                <router-link v-for="child in node.children" :key="child.path" class="nav-item child" :to="child.path" active-class="active" :title="child.label">
+                  <AppIcon v-if="child.icon && !child.hideIcon" :name="child.icon" :size="16" :label="child.label" decorative /><span>{{ child.label }}</span>
+                </router-link>
+              </div>
+            </div>
           </div>
         </div>
       </nav>
@@ -190,7 +203,7 @@ import InAppScanner from './components/InAppScanner.vue'
 import AccountProfileDialog from './components/AccountProfileDialog.vue'
 import { AppIcon } from './components/icons'
 import {
-  MENU_ROUTES, findAppRoute, validateRoutePermissions, firstAllowedPath as firstAllowedPathFor,
+  MENU_ROUTES, NAV_GROUPS, findAppRoute, validateRoutePermissions, firstAllowedPath as firstAllowedPathFor,
   SEARCH_TYPES, searchTypeAllowed, allowedSearchTypes,
 } from './router/routeConfig'
 import { sharedPerms as myPerms, setSharedPerms } from './stores/permStore'
@@ -232,12 +245,25 @@ interface MenuNode {
   hideIcon: boolean
   perm: string
   order: number
+  group: string
   children: MenuNode[]
 }
 
-// 菜单结构：没有真实从属关系的平铺；有父子关系的挂成树（parent 字段声明）。
-// 顶层与子项都按 order 排序，无权限的项直接不出现（父项若没有可见子项则不显示箭头）。
-const menuTree = computed<MenuNode[]>(() => {
+interface NavGroupView {
+  key: string
+  label: string
+  order: number
+  collapsed: boolean
+  items: MenuNode[]
+}
+
+// 导航结构：三层 —— 分组（NAV_GROUPS 定义顺序/默认展开/可见性）→ 组内条目 → 条目的子项。
+// 规则：
+// 1. 条目按自身权限过滤，无权限直接不出现；
+// 2. 分组可见性由 requirePermPrefix 决定（如配置中心要求 system:* 权限）；
+// 3. 父项无权限但子项有权限时，子项提升为组内顶层，功能不丢；
+// 4. 组内按 order 排序，分组按 NAV_GROUPS.order 排序。
+const navGroups = computed<NavGroupView[]>(() => {
   const allowed = MENU_ROUTES.filter(r =>
     (!r.permission || myPerms.value.includes(r.permission)) && routeAllowsView(r.view, roleView.value),
   )
@@ -249,20 +275,55 @@ const menuTree = computed<MenuNode[]>(() => {
     hideIcon: !!r.hideIcon,
     perm: r.permission || '',
     order: r.order ?? 0,
+    group: r.group || '',
     children: [],
   }))
-  const roots: MenuNode[] = []
+  const buckets = new Map<string, MenuNode[]>()
   nodes.forEach(node => {
-    const parentPath = MENU_ROUTES.find(r => r.path === node.path)?.parent
-    const parent = parentPath ? nodes.get(parentPath) : undefined
-    if (parent) parent.children.push(node)
-    else roots.push(node)
+    const cfg = MENU_ROUTES.find(r => r.path === node.path)
+    const parent = cfg?.parent ? nodes.get(cfg.parent) : undefined
+    if (parent) {
+      parent.children.push(node)
+      return
+    }
+    if (!buckets.has(node.group)) buckets.set(node.group, [])
+    buckets.get(node.group)!.push(node)
   })
   const byOrder = (a: MenuNode, b: MenuNode) => a.order - b.order
-  roots.sort(byOrder)
-  roots.forEach(node => node.children.sort(byOrder))
-  return roots
+  return NAV_GROUPS
+    .filter(g => !g.requirePermPrefix || myPerms.value.some(p => p.startsWith(g.requirePermPrefix!)))
+    .map(g => {
+      const items = buckets.get(g.key) || []
+      items.sort(byOrder)
+      items.forEach(item => item.children.sort(byOrder))
+      return { key: g.key, label: g.label, order: g.order, collapsed: !!g.collapsed, items }
+    })
+    .filter(g => g.items.length > 0)
+    .sort((a, b) => a.order - b.order)
 })
+
+// 分组展开状态：用户切换后覆盖默认值并记住（默认取 NAV_GROUPS.collapsed）
+const NAV_GROUP_STATE_KEY = 'mes_nav_groups'
+const groupState = ref<Record<string, boolean>>(readGroupState())
+function readGroupState(): Record<string, boolean> {
+  try {
+    const raw = localStorage.getItem(NAV_GROUP_STATE_KEY)
+    const parsed = raw ? JSON.parse(raw) : {}
+    return parsed && typeof parsed === 'object' ? parsed as Record<string, boolean> : {}
+  } catch { return {} }
+}
+function persistGroupState() {
+  try { localStorage.setItem(NAV_GROUP_STATE_KEY, JSON.stringify(groupState.value)) } catch { /* 忽略存储失败 */ }
+}
+function isGroupExpanded(key: string) {
+  if (key in groupState.value) return !!groupState.value[key]
+  const group = NAV_GROUPS.find(g => g.key === key)
+  return !group?.collapsed
+}
+function toggleGroup(key: string) {
+  groupState.value = { ...groupState.value, [key]: !isGroupExpanded(key) }
+  persistGroupState()
+}
 
 // 展开状态：记在本地；进入子页面时自动展开它的父级。
 const NAV_EXPANDED_KEY = 'mes_nav_expanded'
@@ -291,9 +352,17 @@ function expandAncestors(path: string) {
   expandedPaths.value = [...expandedPaths.value, parent]
   persistExpanded()
 }
-watch(() => route.path, path => expandAncestors(path), { immediate: true })
+// 当前页所属分组：进入时自动展开，避免刷新后看不到自己在哪一组
+function expandOwnGroup(path: string) {
+  const route = MENU_ROUTES.find(r => r.path === path)
+  const group = route?.group
+  if (!group || isGroupExpanded(group)) return
+  groupState.value = { ...groupState.value, [group]: true }
+  persistGroupState()
+}
+watch(() => route.path, path => { expandAncestors(path); expandOwnGroup(path) }, { immediate: true })
 // 扁平列表供角色切换后决定跳转的首页，保持与分组菜单一致。
-const visibleNav = computed(() => menuTree.value.flatMap(node => [node, ...node.children]))
+const visibleNav = computed(() => navGroups.value.flatMap(group => group.items.flatMap(node => [node, ...node.children])))
 
 // 当前页所属父项下的兄弟子页：顶部快捷条（手机端底部 Tab 放不下树，靠它进子页）
 const siblingLinks = computed(() => {
